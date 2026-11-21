@@ -1,0 +1,1597 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>モンテガチャログ リンク版</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #f3efe4;
+        --surface: #ffffff;
+        --surface-alt: #e9e2d0;
+        --text: #1f1d1a;
+        --dim: #45413a;
+        --border: #c9bfa8;
+        --accent: #1d5c3a;
+        --accent-soft: #cdeeda;
+        --meal: #9e4520;
+        --meal-soft: #fbe3d3;
+        --poop-soft: #f7e3bd;
+        --exercise: #1d4e79;
+        --exercise-soft: #cfe4f7;
+        --danger: #a3160e;
+        --danger-soft: #fde3df;
+        --gold: #b97e0a;
+        --gold-soft: #fdf0cd;
+        --radius: 24px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #131311;
+          --surface: #26261f;
+          --surface-alt: #3a3a30;
+          --text: #ffffff;
+          --dim: #ddd8ca;
+          --border: #6b6858;
+          --accent: #7fe0ac;
+          --accent-soft: #1e4630;
+          --meal: #ffa273;
+          --meal-soft: #57351f;
+          --poop-soft: #57431c;
+          --exercise: #93c8f5;
+          --exercise-soft: #1e3c5c;
+          --danger: #ff9d8f;
+          --danger-soft: #5c231c;
+          --gold: #ffd35c;
+          --gold-soft: #574a1c;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: system-ui, -apple-system, "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+        font-weight: 500;
+        -webkit-text-size-adjust: 100%;
+      }
+      .font-display { font-family: "Zen Maru Gothic", system-ui, sans-serif; }
+      button, [role="button"], select, summary,
+      input:not([type="checkbox"], [type="radio"]) { min-height: 2.75rem; }
+      button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+      button:disabled { opacity: 0.5; }
+      :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+      .wrap { position: relative; max-width: 36rem; margin: 0 auto; padding: 0 1rem 5rem; }
+      h1.title { margin: 0; padding-top: 0.9rem; text-align: center; font-size: 1.35rem; font-weight: 900; letter-spacing: 0.04em; }
+
+      /* 人の切り替え */
+      .person-tabs { margin-top: 0.8rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem; padding: 0.25rem; border: 2px solid var(--border); border-radius: 999px; background: var(--surface-alt); }
+      .person-tabs button { border-radius: 999px; padding: 0.8rem 0.25rem; font-size: 1.55rem; font-weight: 900; color: var(--dim); }
+      .person-tabs button[aria-selected="true"] { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.25); }
+      @media (prefers-color-scheme: dark) {
+        .person-tabs button[aria-selected="true"] { color: #10231a; }
+      }
+
+      /* 通信エラー・お知らせ（流れの中に出す） */
+      .net-error { display: none; margin-top: 0.8rem; border-radius: 16px; background: var(--danger-soft); color: var(--danger); padding: 0.8rem 1rem; font-weight: 900; text-align: center; }
+      .net-error.show { display: block; }
+      .net-error button { text-decoration: underline; font-weight: 900; color: var(--danger); min-height: 2rem; padding: 0 0.5rem; }
+      .toast { display: none; margin-top: 0.8rem; border-radius: 999px; background: var(--text); color: var(--bg); padding: 0.7rem 1.2rem; font-weight: 700; text-align: center; }
+      .toast.show { display: block; }
+
+      /* ミッションカード */
+      .card { margin-top: 0.9rem; border: 2px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: 1rem; box-shadow: 0 4px 14px rgba(0,0,0,0.08); }
+      .missing-box { border-radius: 18px; padding: 1rem; text-align: center; }
+      .missing-box.todo { border: 3px solid var(--danger); background: var(--danger-soft); }
+      .missing-box.done { background: var(--accent); color: #fff; }
+      @media (prefers-color-scheme: dark) { .missing-box.done { color: #10231a; } }
+      .missing-box .big { font-size: 1.9rem; font-weight: 900; line-height: 1.35; margin: 0.2rem 0 0; }
+      .missing-box .mid { font-size: 1.45rem; font-weight: 900; line-height: 1.35; margin: 0.2rem 0 0; }
+      .missing-box .small { font-size: 1rem; font-weight: 900; margin: 0.3rem 0 0; }
+      .missing-box.todo .small, .missing-box.todo .cap { color: var(--danger); }
+      .missing-box .cap { font-size: 1.1rem; font-weight: 900; margin: 0; }
+      .mission-head { margin-top: 0.9rem; display: flex; align-items: flex-end; justify-content: space-between; gap: 0.5rem; }
+      .mission-head h2 { margin: 0; font-size: 1.15rem; font-weight: 900; }
+      .goal-btn { border-radius: 999px; background: var(--surface-alt); padding: 0.45rem 1rem; font-size: 1rem; font-weight: 900; color: var(--accent); }
+      .goal-row { margin-top: 1.1rem; display: flex; align-items: center; gap: 1rem; }
+      .goal-row .name { font-size: 1.9rem; font-weight: 900; margin: 0; }
+      .goal-row .status { margin-left: auto; font-size: 1.8rem; font-weight: 900; text-align: right; }
+      .status.ok { color: var(--accent); }
+      .status.ng { color: var(--danger); }
+      .meter { margin-top: 0.5rem; height: 2.2rem; width: 100%; overflow: hidden; border-radius: 999px; border: 2px solid var(--border); background: var(--surface-alt); }
+      .meter > div { height: 100%; border-radius: 999px; transition: width 0.3s; }
+      .meter-label { margin: 0.35rem 0 0; font-size: 1.1rem; font-weight: 900; }
+      .ring-wrap { position: relative; width: 88px; height: 88px; flex-shrink: 0; }
+      .ring-wrap span { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 900; }
+
+      /* 記録ボタン */
+      .btn-grid { margin-top: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+      .big-btn { display: flex; min-height: 148px; flex-direction: column; align-items: center; justify-content: center; gap: 0.2rem; border-radius: 28px; border: 2px solid var(--border); padding: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+      .big-btn:active { transform: scale(0.98); }
+      .big-btn .icon { font-size: 56px; line-height: 1; }
+      .big-btn .label { font-size: 1.9rem; font-weight: 900; }
+      .big-btn .sub { font-size: 1rem; font-weight: 900; color: var(--dim); }
+      .big-btn.poop { background: var(--poop-soft); }
+      .big-btn.exercise { background: var(--exercise-soft); }
+      .big-btn.meal { background: var(--meal); border-color: var(--meal); color: #fff; }
+      @media (prefers-color-scheme: dark) { .big-btn.meal { color: #2a150a; } }
+      .big-btn.meal .sub { color: inherit; opacity: 0.95; }
+      .grid-note { margin: 0.5rem 0 0; text-align: center; font-size: 1rem; font-weight: 900; color: var(--dim); }
+      .backfill-btn { margin-top: 0.8rem; width: 100%; border: 1px dashed var(--border); border-radius: var(--radius); background: var(--surface); padding: 0.8rem; font-size: 1rem; font-weight: 700; color: var(--accent); }
+
+      /* ご褒美エリア */
+      .reward-area { margin-top: 1rem; border: 2px solid var(--accent); border-radius: var(--radius); background: var(--accent-soft); padding: 0.9rem 1rem; }
+      .reward-area .row { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; }
+      .reward-area .lv { font-size: 1.9rem; font-weight: 900; color: var(--accent); margin: 0; }
+      .reward-area .streak { font-size: 1.9rem; font-weight: 900; margin: 0; }
+      .reward-area .msg { margin: 0.3rem 0 0; font-size: 1.1rem; font-weight: 900; line-height: 1.5; }
+      .reward-area .sub { margin: 0.15rem 0 0; font-size: 0.9rem; font-weight: 900; color: var(--dim); }
+
+      /* 記録リスト */
+      .view-tabs { margin-top: 1.6rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem; padding: 0.25rem; border-radius: 999px; background: var(--surface-alt); }
+      .view-tabs button { border-radius: 999px; padding: 0.7rem 0.25rem; font-size: 1.25rem; font-weight: 900; color: var(--dim); }
+      .view-tabs button[aria-selected="true"] { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.25); }
+      @media (prefers-color-scheme: dark) { .view-tabs button[aria-selected="true"] { color: #10231a; } }
+      .day-group { margin-top: 1rem; }
+      .day-group h3 { margin: 0; font-size: 1rem; font-weight: 900; color: var(--dim); }
+      .clear-badge { margin-left: 0.5rem; border-radius: 999px; background: var(--accent); padding: 0.15rem 0.6rem; font-size: 0.85rem; font-weight: 900; color: #fff; }
+      @media (prefers-color-scheme: dark) { .clear-badge { color: #10231a; } }
+      .rec-list { margin: 0.5rem 0 0; padding: 0; list-style: none; border-radius: var(--radius); background: var(--surface); box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow: hidden; }
+      .rec-list li + li { border-top: 1px solid var(--border); }
+      .rec-item { display: flex; width: 100%; align-items: center; gap: 0.75rem; padding: 1rem; text-align: left; }
+      .rec-item .ricon { font-size: 1.9rem; }
+      .rec-item .rmain { flex: 1; min-width: 0; }
+      .rec-item .rlabel { font-size: 1.25rem; font-weight: 900; }
+      .kind-chip { margin-left: 0.4rem; border-radius: 999px; background: var(--exercise-soft); padding: 0.15rem 0.6rem; font-size: 0.85rem; font-weight: 900; color: var(--exercise); vertical-align: middle; }
+      .person-badge { margin-left: 0.4rem; border-radius: 999px; padding: 0.25rem 0.75rem; font-size: 1rem; font-weight: 900; color: #fff; vertical-align: middle; }
+      .person-badge.kengo { background: var(--accent); }
+      .person-badge.kana { background: var(--meal); }
+      @media (prefers-color-scheme: dark) { .person-badge { color: #1c1208; } }
+      .rec-item .rkcal { font-size: 1.1rem; font-weight: 900; color: var(--meal); white-space: nowrap; }
+      .rec-item .rtime { font-size: 1.1rem; font-weight: 900; white-space: nowrap; }
+      .empty-box { margin-top: 1rem; border-radius: var(--radius); background: var(--surface); padding: 1.4rem 1rem; text-align: center; font-weight: 700; color: var(--dim); line-height: 1.7; }
+      .loading { margin-top: 1rem; color: var(--dim); font-weight: 700; }
+
+      /* コレクション */
+      .collection { margin-top: 1.6rem; }
+      .collection h3 { margin: 0; font-size: 1.15rem; font-weight: 900; }
+      .collection h3 .count { font-size: 1rem; color: var(--accent); }
+      .collection ul { margin: 0.5rem 0 0; padding: 0; list-style: none; }
+      .collection li { margin-top: 0.5rem; border-radius: var(--radius); background: var(--surface); padding: 0.8rem 1rem; font-weight: 700; box-shadow: 0 2px 6px rgba(0,0,0,0.05); line-height: 1.6; }
+      .collection .none { margin-top: 0.5rem; font-weight: 700; color: var(--dim); }
+
+      /* シート（画面に重ねる入力パネル） */
+      .overlay { position: absolute; left: 0; width: 100%; z-index: 40; display: none; align-items: flex-start; justify-content: center; background: rgba(0,0,0,0.45); padding: 1rem 0.75rem; }
+      .overlay.show { display: flex; }
+      .sheet { width: 100%; max-width: 36rem; max-height: 92vh; overflow-y: auto; border-radius: 26px; background: var(--surface); padding: 1.25rem; }
+      .sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem; }
+      .sheet-head h2 { margin: 0; font-size: 1.5rem; font-weight: 900; }
+      .close-btn { display: flex; height: 2.75rem; width: 2.75rem; align-items: center; justify-content: center; border-radius: 999px; background: var(--surface-alt); font-size: 1.1rem; }
+      .field-label { margin: 1.2rem 0 0; font-size: 0.95rem; font-weight: 900; }
+      .photo-btn { display: flex; width: 100%; flex-direction: column; align-items: center; gap: 0.2rem; border: 2px dashed var(--meal); border-radius: var(--radius); background: var(--meal-soft); padding: 1.8rem 1rem; color: var(--meal); }
+      .photo-btn .icon { font-size: 2.4rem; }
+      .photo-btn .t1 { font-size: 1.15rem; font-weight: 900; }
+      .photo-btn .t2 { font-size: 0.8rem; font-weight: 700; }
+      .photo-preview { position: relative; }
+      .photo-preview img { width: 100%; max-height: 14rem; object-fit: cover; border-radius: var(--radius); display: block; }
+      .photo-preview button { position: absolute; bottom: 0.5rem; right: 0.5rem; border-radius: 999px; background: rgba(0,0,0,0.65); color: #fff; padding: 0.35rem 0.9rem; font-size: 0.9rem; min-height: 2.25rem; }
+      .preset-grid { margin-top: 0.5rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
+      .preset-grid button { border-radius: 14px; padding: 0.7rem 0.2rem; text-align: center; background: var(--surface-alt); }
+      .preset-grid button[aria-pressed="true"] { background: var(--meal); color: #fff; font-weight: 900; }
+      @media (prefers-color-scheme: dark) { .preset-grid button[aria-pressed="true"] { color: #2a150a; } }
+      .preset-grid .pl { display: block; font-size: 0.95rem; font-weight: 700; }
+      .preset-grid .pk { display: block; font-size: 0.75rem; opacity: 0.85; }
+      .kcal-adjust { margin-top: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 0.9rem; }
+      .kcal-adjust button { height: 2.9rem; width: 2.9rem; border-radius: 999px; background: var(--surface-alt); font-size: 1.4rem; }
+      .kcal-adjust .val { min-width: 8rem; text-align: center; font-size: 2rem; font-weight: 900; margin: 0; }
+      .kcal-adjust .val small { font-size: 1rem; font-weight: 700; }
+      .chip-row { margin-top: 0.5rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+      .chip-row button { border-radius: 999px; padding: 0.5rem 1.1rem; background: var(--surface-alt); font-weight: 700; min-height: 2.75rem; }
+      .chip-row button[aria-pressed="true"] { background: var(--accent); color: #fff; font-weight: 900; }
+      @media (prefers-color-scheme: dark) { .chip-row button[aria-pressed="true"] { color: #10231a; } }
+      .chip-row label { display: flex; align-items: center; gap: 0.3rem; font-size: 0.95rem; color: var(--dim); font-weight: 700; }
+      .num-input { border: 2px solid var(--border); border-radius: 12px; background: var(--surface); color: var(--text); padding: 0.5rem; text-align: right; font: inherit; font-weight: 900; }
+      .num-input.w20 { width: 5.2rem; }
+      .num-input.w24 { width: 6.2rem; }
+      .text-input, .dt-input { width: 100%; border: 2px solid var(--border); border-radius: 12px; background: var(--surface); color: var(--text); padding: 0.6rem 0.8rem; font: inherit; margin-top: 0.3rem; }
+      .save-btn { margin-top: 1.5rem; width: 100%; border-radius: 999px; padding: 1rem; font-size: 1.15rem; font-weight: 900; color: #fff; }
+      .save-btn.accent { background: var(--accent); }
+      .save-btn.meal { background: var(--meal); }
+      @media (prefers-color-scheme: dark) { .save-btn { color: #14231a; } .save-btn.meal { color: #2a150a; } }
+      .sheet-error { margin-top: 0.8rem; color: var(--danger); font-weight: 700; font-size: 0.95rem; }
+      .type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+      .type-grid button { border-radius: 14px; padding: 0.8rem 0.2rem; text-align: center; background: var(--surface-alt); }
+      .type-grid button[aria-checked="true"] { background: var(--accent); color: #fff; font-weight: 900; }
+      @media (prefers-color-scheme: dark) { .type-grid button[aria-checked="true"] { color: #10231a; } }
+      .type-grid .ti { display: block; font-size: 1.35rem; }
+      .type-grid .tl { display: block; font-size: 0.95rem; font-weight: 700; margin-top: 0.15rem; }
+      .delete-btn { margin-top: 0.8rem; width: 100%; border-radius: 999px; padding: 0.8rem; color: var(--danger); font-weight: 700; }
+      .delete-confirm { margin-top: 0.8rem; display: flex; gap: 0.5rem; }
+      .delete-confirm button { flex: 1; border-radius: 999px; padding: 0.8rem; font-weight: 900; }
+      .delete-confirm .yes { background: var(--danger); color: #fff; }
+      .delete-confirm .no { background: var(--surface-alt); }
+
+      /* 目標ピッカー */
+      .goal-picker { margin-top: 1.4rem; }
+      .goal-picker .gp-label { margin: 0; font-size: 1.15rem; font-weight: 900; }
+      .goal-picker .gp-row { margin-top: 0.5rem; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+      .goal-picker .gp-row button { border-radius: 999px; padding: 0.7rem 1.2rem; font-size: 1.1rem; font-weight: 900; background: var(--surface-alt); }
+      .goal-picker .gp-row button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+      @media (prefers-color-scheme: dark) { .goal-picker .gp-row button[aria-pressed="true"] { color: #10231a; } }
+      .goal-picker label { display: flex; align-items: center; gap: 0.3rem; font-weight: 700; color: var(--dim); }
+      .who-grid { margin-top: 0.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+      .who-grid button { border-radius: 999px; padding: 0.9rem 0.25rem; font-size: 1.3rem; font-weight: 900; background: var(--surface-alt); }
+      .who-grid button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+      @media (prefers-color-scheme: dark) { .who-grid button[aria-pressed="true"] { color: #10231a; } }
+      .skip-btn { margin-top: 0.5rem; width: 100%; border-radius: 999px; padding: 0.8rem; font-size: 1rem; font-weight: 900; color: var(--dim); text-decoration: underline; text-underline-offset: 3px; }
+      .sheet-note { margin: 0.3rem 0 0; font-weight: 700; color: var(--dim); line-height: 1.6; }
+
+      /* ガチャご褒美 */
+      .reward-card { width: 100%; max-width: 28rem; border-radius: 32px; border: 4px solid transparent; background: var(--surface); padding: 1.6rem; text-align: center; box-shadow: 0 18px 40px rgba(0,0,0,0.3); overflow: hidden; }
+      .reward-card.word-phase { border-color: var(--gold); background: var(--gold-soft); }
+      .capsule { position: relative; margin: 0 auto; height: 7rem; width: 7rem; overflow: hidden; border-radius: 999px; border: 4px solid var(--surface); box-shadow: 0 10px 24px rgba(0,0,0,0.25); }
+      .capsule .top { position: absolute; left: 0; right: 0; top: 0; height: 50%; background: #e23b2e; }
+      .capsule .bottom { position: absolute; left: 0; right: 0; bottom: 0; height: 50%; background: #fdf6ec; }
+      .capsule .line { position: absolute; left: 0; right: 0; top: 50%; height: 6px; transform: translateY(-50%); background: rgba(0,0,0,0.15); }
+      .capsule .core { position: absolute; left: 50%; top: 50%; height: 2rem; width: 2rem; transform: translate(-50%,-50%); border-radius: 999px; border: 4px solid rgba(0,0,0,0.15); background: #fff; }
+      .open-stage { position: relative; padding: 1.5rem 0; }
+      .open-capsule { position: relative; margin: 0 auto; height: 7rem; width: 7rem; }
+      .open-capsule .ht { position: absolute; left: 0; right: 0; top: 0; height: 50%; border-radius: 7rem 7rem 0 0; background: #e23b2e; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+      .open-capsule .hb { position: absolute; left: 0; right: 0; bottom: 0; height: 50%; border-radius: 0 0 7rem 7rem; background: #fdf6ec; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+      .burst { position: absolute; left: 50%; top: 2.5rem; height: 7rem; width: 7rem; transform: translateX(-50%); border-radius: 999px; border: 8px solid var(--gold); }
+      .sparkle { position: absolute; font-size: 1.9rem; }
+      .reward-title { margin: 1.2rem 0 0; font-size: 1.9rem; font-weight: 900; }
+      .reward-sub { margin: 0.3rem 0 0; font-size: 1.1rem; font-weight: 900; color: var(--dim); }
+      .word-head { margin: 0; font-size: 1.5rem; font-weight: 900; color: var(--accent); }
+      .confetti { margin: 0.3rem 0 0; font-size: 1.5rem; letter-spacing: 0.3em; }
+      .levelup-chip { display: inline-block; margin-top: 0.8rem; border-radius: 999px; background: var(--accent); padding: 0.5rem 1.3rem; font-size: 1.25rem; font-weight: 900; color: #fff; }
+      @media (prefers-color-scheme: dark) { .levelup-chip { color: #10231a; } }
+      .word-box { margin-top: 1.2rem; border-radius: 24px; background: var(--surface); padding: 1.5rem 1.2rem; }
+      .word-box p { margin: 0; font-size: 2rem; font-weight: 900; line-height: 1.55; }
+      .word-note { margin: 0.8rem 0 0; font-size: 1rem; font-weight: 900; color: var(--dim); }
+      .yay-btn { margin-top: 1.3rem; width: 100%; border-radius: 999px; background: var(--accent); padding: 1rem; font-size: 1.5rem; font-weight: 900; color: #fff; box-shadow: 0 6px 16px rgba(0,0,0,0.2); }
+      @media (prefers-color-scheme: dark) { .yay-btn { color: #10231a; } }
+
+      @keyframes capsule-shake {
+        0%, 100% { transform: rotate(-8deg) translateY(0); }
+        25% { transform: rotate(8deg) translateY(-8px); }
+        50% { transform: rotate(-8deg) translateY(0); }
+        75% { transform: rotate(8deg) translateY(-8px); }
+      }
+      @keyframes pop-in { 0% { transform: scale(0.5); opacity: 0; } 60% { transform: scale(1.08); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+      @keyframes half-top { from { transform: translateY(0) rotate(0deg); opacity: 1; } to { transform: translateY(-46px) rotate(-24deg); opacity: 0.9; } }
+      @keyframes half-bottom { from { transform: translateY(0) rotate(0deg); opacity: 1; } to { transform: translateY(40px) rotate(16deg); opacity: 0.9; } }
+      @keyframes sparkle-pop { 0% { transform: scale(0) rotate(0deg); opacity: 0; } 55% { transform: scale(1.35) rotate(40deg); opacity: 1; } 100% { transform: scale(1) rotate(70deg); opacity: 0.95; } }
+      @keyframes burst-ring { from { transform: scale(0.35); opacity: 0.9; } to { transform: scale(1.9); opacity: 0; } }
+      @keyframes glow-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,200,40,0); } 50% { box-shadow: 0 0 42px 6px rgba(255,200,40,0.55); } }
+      @keyframes float-up { 0% { transform: translateY(10px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+      .anim-capsule { animation: capsule-shake 0.16s ease-in-out 4; }
+      .anim-pop { animation: pop-in 0.3s ease-out; }
+      .anim-half-top { animation: half-top 0.45s ease-out forwards; }
+      .anim-half-bottom { animation: half-bottom 0.45s ease-out forwards; }
+      .anim-sparkle { animation: sparkle-pop 0.55s ease-out both; }
+      .anim-burst { animation: burst-ring 0.55s ease-out forwards; }
+      .anim-glow { animation: glow-pulse 0.9s ease-in-out 2; }
+      .anim-float-up { animation: float-up 0.3s ease-out both; }
+      @media (prefers-reduced-motion: reduce) {
+        .anim-capsule, .anim-pop, .anim-half-top, .anim-half-bottom,
+        .anim-sparkle, .anim-burst, .anim-glow, .anim-float-up { animation: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap" id="wrap">
+      <h1 class="title font-display">モンテガチャログ</h1>
+
+      <div class="person-tabs font-display" role="tablist" aria-label="記録する人" id="person-tabs"></div>
+
+      <div class="net-error" id="net-error" role="alert">
+        通信できませんでした。<button type="button" id="retry-btn">もう一度読み込む</button>
+      </div>
+      <div class="toast" id="toast" role="status"></div>
+
+      <!-- 今日のミッション -->
+      <section class="card" aria-label="今日のミニマム目標">
+        <div id="missing-area"></div>
+        <div class="mission-head">
+          <h2 class="font-display">今日のミッション</h2>
+          <button type="button" class="goal-btn" id="open-goals">⚙ 目標を変更</button>
+        </div>
+        <div class="goal-row">
+          <div class="ring-wrap" id="exercise-ring" role="img" aria-label="運動の進み具合"></div>
+          <p class="name font-display">🏃 運動</p>
+          <p class="status font-display" id="exercise-status"></p>
+        </div>
+        <div style="margin-top:1.4rem">
+          <div class="goal-row" style="margin-top:0">
+            <p class="name font-display">🍚 食事</p>
+            <p class="status font-display" id="meal-status"></p>
+          </div>
+          <div class="meter" role="progressbar" id="meal-meter" aria-label="食事カロリーの進み具合">
+            <div id="meal-meter-fill"></div>
+          </div>
+          <p class="meter-label" id="meal-meter-label"></p>
+        </div>
+      </section>
+
+      <!-- 記録ボタン6つ -->
+      <section class="btn-grid" aria-label="記録する">
+        <button type="button" class="big-btn poop" data-quick="poop">
+          <span class="icon" aria-hidden="true">💩</span>
+          <span class="label font-display">うんち</span>
+          <span class="sub">タップで記録</span>
+        </button>
+        <button type="button" class="big-btn meal" id="open-meal" aria-label="食事を記録（カメラが起動します）">
+          <span class="icon" aria-hidden="true">📷</span>
+          <span class="label font-display">食事</span>
+          <span class="sub">写真を撮って記録</span>
+        </button>
+        <button type="button" class="big-btn exercise" data-quick="kintore">
+          <span class="icon" aria-hidden="true">🏋️</span>
+          <span class="label font-display">筋トレ</span>
+          <span class="sub">タップで記録</span>
+        </button>
+        <button type="button" class="big-btn exercise" data-quick="sanpo">
+          <span class="icon" aria-hidden="true">🚶</span>
+          <span class="label font-display">散歩</span>
+          <span class="sub">タップで記録</span>
+        </button>
+        <button type="button" class="big-btn exercise" data-quick="run">
+          <span class="icon" aria-hidden="true">🏃</span>
+          <span class="label font-display">ラン</span>
+          <span class="sub">タップで記録</span>
+        </button>
+        <button type="button" class="big-btn exercise" data-quick="sports">
+          <span class="icon" aria-hidden="true">⚽</span>
+          <span class="label font-display">スポーツ</span>
+          <span class="sub">タップで記録</span>
+        </button>
+      </section>
+      <p class="grid-note">筋トレ・散歩・ラン・スポーツは、全部「運動」として数えます</p>
+
+      <button type="button" class="backfill-btn" id="open-backfill">＋ あとから追加（過去の記録）</button>
+
+      <!-- ご褒美エリア -->
+      <section class="reward-area" aria-label="レベルと連続日数">
+        <div class="row">
+          <p class="lv font-display" id="level-label">🎮 Lv.1</p>
+          <p class="streak font-display" id="streak-label">🔥 0日連続</p>
+        </div>
+        <p class="msg font-display" id="reward-msg"></p>
+        <p class="sub" id="reward-sub"></p>
+      </section>
+
+      <!-- 記録リスト -->
+      <section aria-label="記録">
+        <div class="view-tabs font-display" role="tablist" aria-label="表示する記録">
+          <button type="button" role="tab" id="tab-today" aria-selected="true">今日の記録</button>
+          <button type="button" role="tab" id="tab-history" aria-selected="false">履歴</button>
+        </div>
+        <p class="loading" id="loading">読み込んでいます…</p>
+        <div id="lists"></div>
+        <div class="collection" id="collection" style="display:none"></div>
+      </section>
+    </div>
+
+    <!-- 入力シート用オーバーレイ -->
+    <div class="overlay" id="overlay">
+      <!-- 食事シート -->
+      <div class="sheet" id="sheet-meal" style="display:none">
+        <div class="sheet-head">
+          <h2 class="font-display" id="meal-title">食事</h2>
+          <button type="button" class="close-btn" data-close aria-label="閉じる">✕</button>
+        </div>
+        <input type="file" id="meal-file" accept="image/*" capture="environment" hidden aria-label="食事の写真を撮る" />
+        <div id="meal-photo-empty">
+          <button type="button" class="photo-btn" id="meal-photo-btn">
+            <span class="icon" aria-hidden="true">📷</span>
+            <span class="t1 font-display">カメラで写真を撮る</span>
+            <span class="t2">タップでカメラが起動します（写真はこの端末の中だけ）</span>
+          </button>
+        </div>
+        <div class="photo-preview" id="meal-photo-preview" style="display:none">
+          <img id="meal-photo-img" alt="撮影した食事の写真" />
+          <button type="button" id="meal-retake">撮り直す</button>
+        </div>
+        <p class="field-label">推定カロリー（目安でOK、そのまま保存できます）</p>
+        <div class="preset-grid" id="meal-presets"></div>
+        <div class="kcal-adjust">
+          <button type="button" id="meal-minus" aria-label="カロリーを50減らす">−</button>
+          <p class="val font-display"><span id="meal-kcal-val">650</span><small> kcal</small></p>
+          <button type="button" id="meal-plus" aria-label="カロリーを50増やす">＋</button>
+        </div>
+        <p class="field-label">間食（あれば）</p>
+        <div class="chip-row" id="snack-row">
+          <button type="button" data-snack="0" aria-pressed="true">なし</button>
+          <button type="button" data-snack="100" aria-pressed="false">100 kcal</button>
+          <button type="button" data-snack="200" aria-pressed="false">200 kcal</button>
+          <button type="button" data-snack="300" aria-pressed="false">300 kcal</button>
+          <label>自分で入力
+            <input type="number" inputmode="numeric" class="num-input w20" id="snack-input" placeholder="0" aria-label="間食のカロリーを自分で入力" />
+            kcal
+          </label>
+        </div>
+        <p class="sheet-error" id="meal-error" style="display:none"></p>
+        <button type="button" class="save-btn meal font-display" id="meal-save">保存する</button>
+      </div>
+
+      <!-- あとから追加シート -->
+      <div class="sheet" id="sheet-backfill" style="display:none">
+        <div class="sheet-head">
+          <h2 class="font-display" id="backfill-title">記録を追加</h2>
+          <button type="button" class="close-btn" data-close aria-label="閉じる">✕</button>
+        </div>
+        <div class="type-grid" role="radiogroup" aria-label="記録の種類" id="backfill-types"></div>
+        <label class="field-label" for="backfill-when">日時</label>
+        <input type="datetime-local" class="dt-input" id="backfill-when" />
+        <div id="backfill-meal-fields" style="display:none">
+          <p class="field-label">推定カロリー（目安）</p>
+          <div class="preset-grid" id="backfill-presets"></div>
+          <div class="chip-row" style="margin-top:0.9rem">
+            <label>食事
+              <input type="number" inputmode="numeric" class="num-input w24" id="backfill-kcal" aria-label="食事のカロリー" />
+              kcal ＋ 間食
+              <input type="number" inputmode="numeric" class="num-input w20" id="backfill-snack" placeholder="0" aria-label="間食のカロリー" />
+              kcal
+            </label>
+          </div>
+        </div>
+        <p class="sheet-error" id="backfill-error" style="display:none"></p>
+        <button type="button" class="save-btn accent font-display" id="backfill-save">追加する</button>
+      </div>
+
+      <!-- 編集シート -->
+      <div class="sheet" id="sheet-edit" style="display:none">
+        <div class="sheet-head">
+          <h2 class="font-display" id="edit-title">記録</h2>
+          <button type="button" class="close-btn" data-close aria-label="閉じる">✕</button>
+        </div>
+        <p class="sheet-note" id="edit-owner"></p>
+        <div id="edit-type-wrap" style="display:none">
+          <p class="field-label">運動の種類</p>
+          <div class="type-grid" role="radiogroup" aria-label="運動の種類" id="edit-types" style="grid-template-columns:repeat(2,1fr)"></div>
+        </div>
+        <label class="field-label" for="edit-when">日時</label>
+        <input type="datetime-local" class="dt-input" id="edit-when" />
+        <div id="edit-meal-fields" style="display:none">
+          <p class="field-label">カロリー（間食ふくむ合計）</p>
+          <div class="preset-grid" id="edit-presets"></div>
+          <div class="kcal-adjust">
+            <button type="button" id="edit-minus" aria-label="カロリーを50減らす">−</button>
+            <p class="val font-display"><span id="edit-kcal-val">0</span><small> kcal</small></p>
+            <button type="button" id="edit-plus" aria-label="カロリーを50増やす">＋</button>
+          </div>
+        </div>
+        <p class="sheet-error" id="edit-error" style="display:none"></p>
+        <button type="button" class="save-btn accent font-display" id="edit-save">変更を保存</button>
+        <button type="button" class="delete-btn" id="edit-delete">この記録を削除</button>
+        <div class="delete-confirm" id="edit-delete-confirm" style="display:none">
+          <button type="button" class="yes" id="edit-delete-yes">本当に削除する</button>
+          <button type="button" class="no" id="edit-delete-no">やめる</button>
+        </div>
+      </div>
+
+      <!-- 目標シート -->
+      <div class="sheet" id="sheet-goals" style="display:none">
+        <div class="sheet-head">
+          <h2 class="font-display" id="goals-title">ミニマム目標</h2>
+          <button type="button" class="close-btn" data-close aria-label="閉じる">✕</button>
+        </div>
+        <p class="sheet-note" id="goals-note"></p>
+        <div id="goals-fields"></div>
+        <p class="sheet-error" id="goals-error" style="display:none"></p>
+        <button type="button" class="save-btn accent font-display" id="goals-save">保存する</button>
+      </div>
+
+      <!-- 初期設定 -->
+      <div class="sheet" id="sheet-onboard" style="display:none">
+        <h2 class="font-display" style="margin:0;font-size:1.5rem;font-weight:900">ようこそ！モンテガチャログ</h2>
+        <p class="sheet-note">最初に、この端末を使う人と、あなたのミニマム目標を決めてください（あとでいつでも変えられます）。</p>
+        <p class="field-label font-display" style="font-size:1.15rem">あなたはどっち？</p>
+        <div class="who-grid font-display" id="onboard-who"></div>
+        <div id="onboard-fields"></div>
+        <p class="sheet-error" id="onboard-error" style="display:none"></p>
+        <button type="button" class="save-btn accent font-display" id="onboard-save" style="font-size:1.3rem">これで始める</button>
+        <button type="button" class="skip-btn" id="onboard-skip">あとで決める（目安のままで始める）</button>
+      </div>
+    </div>
+
+    <!-- ガチャご褒美オーバーレイ -->
+    <div class="overlay" id="reward-overlay">
+      <div class="reward-card" id="reward-card">
+        <div id="reward-phase-capsule">
+          <div class="capsule anim-capsule" aria-hidden="true">
+            <div class="top"></div><div class="bottom"></div><div class="line"></div><div class="core"></div>
+          </div>
+          <p class="reward-title font-display">記録できました！</p>
+          <p class="reward-sub">ガチャが回っています…</p>
+        </div>
+        <div id="reward-phase-open" style="display:none">
+          <div class="open-stage">
+            <div class="burst anim-burst" aria-hidden="true"></div>
+            <div class="open-capsule" aria-hidden="true">
+              <div class="ht anim-half-top"></div>
+              <div class="hb anim-half-bottom"></div>
+              <span class="sparkle anim-sparkle" style="left:-1rem;top:0.4rem">✨</span>
+              <span class="sparkle anim-sparkle" style="right:-1rem;top:1.4rem;animation-delay:0.08s">⭐</span>
+              <span class="sparkle anim-sparkle" style="left:50%;top:1.8rem;transform:translateX(-50%);animation-delay:0.15s">💫</span>
+            </div>
+          </div>
+          <p class="reward-title font-display" style="color:var(--gold)">ポンッ！</p>
+        </div>
+        <div id="reward-phase-word" style="display:none">
+          <div class="anim-pop" style="position:relative">
+            <p class="word-head font-display">🎉 やった！言葉ゲット！</p>
+            <p class="confetti anim-float-up" aria-hidden="true">🎊🟡🔴🔵🟢🎊</p>
+            <div id="levelup-slot"></div>
+            <div class="word-box anim-glow">
+              <p class="font-display" id="reward-word"></p>
+            </div>
+            <p class="word-note">モンテッソーリの言葉 ・ コレクションに保存しました</p>
+            <button type="button" class="yay-btn font-display" id="reward-close">やった！</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      "use strict";
+      /* ===== Supabase（リンク共有版の保存先） ===== */
+      var SB_URL = "https://uysqyzokcifpeznolegy.supabase.co";
+      var SB_KEY = "sb_publishable_TFtVzrBTDScVIW37EKEG0g_2BSf5ERA";
+      function sbHeaders(extra) {
+        var h = {
+          apikey: SB_KEY,
+          Authorization: "Bearer " + SB_KEY,
+          "Content-Type": "application/json",
+        };
+        if (extra) for (var k in extra) h[k] = extra[k];
+        return h;
+      }
+      async function sbGet(path) {
+        var res = await fetch(SB_URL + "/rest/v1/" + path, { headers: sbHeaders() });
+        if (!res.ok) throw new Error("GET " + res.status);
+        return res.json();
+      }
+      async function sbSend(method, path, body, prefer) {
+        var res = await fetch(SB_URL + "/rest/v1/" + path, {
+          method: method,
+          headers: sbHeaders(prefer ? { Prefer: prefer } : null),
+          body: body ? JSON.stringify(body) : undefined,
+        });
+        if (!res.ok) throw new Error(method + " " + res.status);
+        return true;
+      }
+      function newId() {
+        return (
+          "r" +
+          Date.now().toString(36) +
+          Math.random().toString(36).slice(2, 10)
+        );
+      }
+
+      /* ===== 基本データ ===== */
+      var PEOPLE = [
+        { person: "kengo", name: "健吾" },
+        { person: "kana", name: "佳奈" },
+      ];
+      var TYPE_META = {
+        poop: { label: "うんち", icon: "💩" },
+        meal: { label: "食事", icon: "🍚" },
+        kintore: { label: "筋トレ", icon: "🏋️" },
+        sanpo: { label: "散歩", icon: "🚶" },
+        run: { label: "ラン", icon: "🏃" },
+        sports: { label: "スポーツ", icon: "⚽" },
+      };
+      var EXERCISE_TYPES = ["kintore", "sanpo", "run", "sports"];
+      var ALL_TYPES = ["poop", "meal", "kintore", "sanpo", "run", "sports"];
+      var MEAL_PRESETS = [
+        { label: "軽め", kcal: 400 },
+        { label: "ふつう", kcal: 650 },
+        { label: "多め", kcal: 900 },
+        { label: "たっぷり", kcal: 1200 },
+      ];
+      var DEFAULT_PROFILE = { exercise_goal: 3, calorie_limit: 2000 };
+
+      /* モンテッソーリの言葉（レベルで深くなる3 tiers） */
+      var WORD_TIERS = [
+        [
+          "「自分でするのを、手伝ってください」――子どもの心の声です",
+          "遊びは、子どもの仕事です",
+          "手が動くとき、心も育ちます",
+          "集中している子どもは、深く幸せの中にいます",
+          "できると思っていることは、手伝わないでください",
+          "子どもは、環境の中で自分をつくり上げていきます",
+        ],
+        [
+          "平和をつくることは、教育の仕事です",
+          "子どもの可能性を解き放てば、世界が変わります",
+          "興味に満ちた環境が、子どもを活動へ招きます",
+          "待つことは、信じることです",
+          "子どもの歩く速さに合わせることが、教育の第一歩です",
+          "秩序は、幼い心の安心です",
+        ],
+        [
+          "繰り返しは、子どもが自分を育てる方法です",
+          "大人の仕事は、子どもの邪魔をしないことです",
+          "観察こそが、子育ての出発点です",
+          "環境を整えることが、大人にできる最大の援助です",
+          "子どもの「できた！」の瞬間を、奪わないでください",
+        ],
+      ];
+      var ALL_WORDS = WORD_TIERS[0].concat(WORD_TIERS[1], WORD_TIERS[2]);
+      function tierForLevel(level) {
+        if (level >= 4) return 3;
+        if (level >= 2) return 2;
+        return 1;
+      }
+
+      /* ===== 状態 ===== */
+      var person = (function () {
+        var saved = null;
+        try { saved = localStorage.getItem("mg-person"); } catch (e) {}
+        return saved === "kana" ? "kana" : "kengo";
+      })();
+      var hasDevicePerson = (function () {
+        try { return !!localStorage.getItem("mg-person"); } catch (e) { return false; }
+      })();
+      var records = [];
+      var profiles = { kengo: null, kana: null };
+      var collected = { kengo: [], kana: [] };
+      var recentWords = (function () {
+        try {
+          var raw = localStorage.getItem("mg-recent-words");
+          var p = raw ? JSON.parse(raw) : [];
+          return Array.isArray(p) ? p.filter(function (w) { return typeof w === "string"; }) : [];
+        } catch (e) { return []; }
+      })();
+      var view = "today";
+      var loaded = false;
+      var busy = false;
+
+      function profileOf(p) {
+        return profiles[p] || DEFAULT_PROFILE;
+      }
+      function nameOf(p) {
+        return p === "kana" ? "佳奈" : "健吾";
+      }
+
+      /* ===== 日時ユーティリティ ===== */
+      function dayKey(d) {
+        return d.getFullYear() + "-" + d.getMonth() + "-" + d.getDate();
+      }
+      function isToday(iso) {
+        return dayKey(new Date(iso)) === dayKey(new Date());
+      }
+      function fmtTime(iso) {
+        var d = new Date(iso);
+        return d.getHours() + ":" + String(d.getMinutes()).padStart(2, "0");
+      }
+      function fmtDayLabel(iso) {
+        var d = new Date(iso);
+        var today = new Date();
+        var yesterday = new Date(today.getTime() - 86400000);
+        if (dayKey(d) === dayKey(today)) return "今日";
+        if (dayKey(d) === dayKey(yesterday)) return "昨日";
+        var wd = ["日", "月", "火", "水", "木", "金", "土"][d.getDay()];
+        return d.getMonth() + 1 + "月" + d.getDate() + "日（" + wd + "）";
+      }
+      function toLocalInput(iso) {
+        var d = new Date(iso);
+        var p = function (n) { return String(n).padStart(2, "0"); };
+        return (
+          d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) +
+          "T" + p(d.getHours()) + ":" + p(d.getMinutes())
+        );
+      }
+      function esc(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+      function $(id) { return document.getElementById(id); }
+
+      /* ===== 達成判定（運動＋食事の2つだけ） ===== */
+      function achievedSetFor(p) {
+        var prof = profileOf(p);
+        var byDay = {};
+        records.forEach(function (r) {
+          if (r.person !== p) return;
+          var key = dayKey(new Date(r.created_at));
+          if (!byDay[key]) byDay[key] = { ex: 0, kcal: 0 };
+          if (EXERCISE_TYPES.indexOf(r.type) >= 0) byDay[key].ex += 1;
+          if (r.type === "meal") byDay[key].kcal += r.calories || 0;
+        });
+        var set = {};
+        Object.keys(byDay).forEach(function (key) {
+          var d = byDay[key];
+          if (d.ex >= prof.exercise_goal && d.kcal <= prof.calorie_limit) set[key] = true;
+        });
+        return set;
+      }
+      function levelOf(p) {
+        return Object.keys(achievedSetFor(p)).length + 1;
+      }
+      function streakFrom(set, from) {
+        var n = 0;
+        var d = new Date(from.getFullYear(), from.getMonth(), from.getDate());
+        while (set[dayKey(d)]) {
+          n += 1;
+          d.setDate(d.getDate() - 1);
+        }
+        return n;
+      }
+      function todayStats(p) {
+        var prof = profileOf(p);
+        var mine = records.filter(function (r) {
+          return r.person === p && isToday(r.created_at);
+        });
+        var ex = mine.filter(function (r) {
+          return EXERCISE_TYPES.indexOf(r.type) >= 0;
+        }).length;
+        var kcal = mine
+          .filter(function (r) { return r.type === "meal"; })
+          .reduce(function (s, r) { return s + (r.calories || 0); }, 0);
+        return {
+          ex: ex,
+          exGoal: prof.exercise_goal,
+          exDone: ex >= prof.exercise_goal,
+          kcal: kcal,
+          limit: prof.calorie_limit,
+          remaining: prof.calorie_limit - kcal,
+        };
+      }
+      function allDone(p) {
+        var s = todayStats(p);
+        return s.exDone && s.remaining >= 0;
+      }
+
+      /* ===== データ読み込み ===== */
+      async function loadAll() {
+        try {
+          var results = await Promise.all([
+            sbGet("monte_records?select=*&order=created_at.desc&limit=500"),
+            sbGet("monte_profiles?select=*"),
+            sbGet("monte_collected?select=*&order=created_at.asc&limit=500"),
+          ]);
+          records = results[0] || [];
+          profiles = { kengo: null, kana: null };
+          (results[1] || []).forEach(function (pr) {
+            profiles[pr.person] = {
+              exercise_goal: pr.exercise_goal,
+              calorie_limit: pr.calorie_limit,
+            };
+          });
+          collected = { kengo: [], kana: [] };
+          (results[2] || []).forEach(function (c) {
+            if (collected[c.person]) collected[c.person].push(c.word);
+          });
+          loaded = true;
+          $("net-error").classList.remove("show");
+        } catch (e) {
+          $("net-error").classList.add("show");
+        }
+        $("loading").style.display = "none";
+        render();
+      }
+
+      var toastTimer = null;
+      function showToast(msg) {
+        var t = $("toast");
+        t.textContent = msg;
+        t.classList.add("show");
+        if (toastTimer) window.clearTimeout(toastTimer);
+        toastTimer = window.setTimeout(function () {
+          t.classList.remove("show");
+        }, 2600);
+      }
+
+      /* ===== 描画 ===== */
+      function render() {
+        renderPersonTabs();
+        renderMission();
+        renderRewardArea();
+        renderLists();
+      }
+      function renderPersonTabs() {
+        var html = "";
+        PEOPLE.forEach(function (p) {
+          html +=
+            '<button type="button" role="tab" data-person="' + p.person +
+            '" aria-selected="' + (person === p.person) + '">' +
+            esc(p.name) + "さん</button>";
+        });
+        $("person-tabs").innerHTML = html;
+        Array.prototype.forEach.call(
+          $("person-tabs").querySelectorAll("button"),
+          function (b) {
+            b.addEventListener("click", function () {
+              person = b.getAttribute("data-person");
+              try { localStorage.setItem("mg-person", person); } catch (e) {}
+              hasDevicePerson = true;
+              render();
+            });
+          }
+        );
+      }
+      function renderMission() {
+        var s = todayStats(person);
+        var done = s.exDone && s.remaining >= 0;
+        var area = $("missing-area");
+        if (done) {
+          area.innerHTML =
+            '<div class="missing-box done"><p class="big font-display">🎉 今日クリア！レベル+1</p></div>';
+        } else {
+          var parts = "";
+          if (!s.exDone)
+            parts =
+              '<p class="big font-display">運動あと' + (s.exGoal - s.ex) + "回</p>";
+          var mealLine =
+            s.remaining >= 0
+              ? "食事はあと" + s.remaining.toLocaleString() + " kcal"
+              : "食事が" + Math.abs(s.remaining).toLocaleString() + " kcalオーバー";
+          var hint = s.exDone
+            ? "運動は達成！食事が上限以内なら今日クリアです"
+            : "あと運動" + (s.exGoal - s.ex) + "回で今日レベルアップ 🎮";
+          area.innerHTML =
+            '<div class="missing-box todo"><p class="cap font-display">今日足りないもの</p>' +
+            parts +
+            '<p class="mid font-display">' + mealLine + "</p>" +
+            '<p class="small font-display">' + hint + "</p></div>";
+        }
+        /* 運動リング */
+        var size = 88, stroke = 11, r = (size - stroke) / 2;
+        var c = 2 * Math.PI * r;
+        var frac = s.exGoal > 0 ? Math.min(1, s.ex / s.exGoal) : 1;
+        $("exercise-ring").innerHTML =
+          '<svg width="88" height="88" style="transform:rotate(-90deg)">' +
+          '<circle cx="44" cy="44" r="' + r + '" stroke="var(--surface-alt)" stroke-width="' + stroke + '" fill="none"/>' +
+          '<circle cx="44" cy="44" r="' + r + '" stroke="' + (s.exDone ? "var(--accent)" : "var(--danger)") +
+          '" stroke-width="' + stroke + '" fill="none" stroke-linecap="round" stroke-dasharray="' + c +
+          '" stroke-dashoffset="' + c * (1 - frac) + '"/></svg>' +
+          '<span class="font-display">' + (s.exDone ? "✓" : s.ex + "/" + s.exGoal) + "</span>";
+        $("exercise-ring").setAttribute("aria-label", "運動 " + s.ex + "/" + s.exGoal + "回");
+        var es = $("exercise-status");
+        es.textContent = s.exDone ? "✓ 達成" : "あと" + (s.exGoal - s.ex) + "回";
+        es.className = "status font-display " + (s.exDone ? "ok" : "ng");
+        /* 食事メーター */
+        var ms = $("meal-status");
+        ms.textContent =
+          s.remaining < 0
+            ? Math.abs(s.remaining).toLocaleString() + " kcalオーバー"
+            : "あと" + s.remaining.toLocaleString() + " kcal";
+        ms.className = "status font-display " + (s.remaining < 0 ? "ng" : "ok");
+        var pct = s.limit > 0 ? Math.min(100, Math.round((s.kcal / s.limit) * 100)) : 0;
+        var fill = $("meal-meter-fill");
+        fill.style.width = pct + "%";
+        fill.style.background = s.remaining < 0 ? "var(--danger)" : "var(--meal)";
+        $("meal-meter").setAttribute("aria-valuenow", s.kcal);
+        $("meal-meter").setAttribute("aria-valuemax", s.limit);
+        $("meal-meter-label").textContent =
+          s.kcal.toLocaleString() + " / " + s.limit.toLocaleString() + " kcal";
+      }
+      function renderRewardArea() {
+        var set = achievedSetFor(person);
+        var level = Object.keys(set).length + 1;
+        var done = allDone(person);
+        var now = new Date();
+        var yesterday = new Date(now.getTime() - 86400000);
+        var streak = done ? streakFrom(set, now) : streakFrom(set, yesterday);
+        var best = 0;
+        Object.keys(set).forEach(function (key) {
+          var parts = key.split("-").map(Number);
+          var prev = new Date(parts[0], parts[1], parts[2]);
+          prev.setDate(prev.getDate() - 1);
+          if (!set[dayKey(prev)]) {
+            var run = 0;
+            var d = new Date(parts[0], parts[1], parts[2]);
+            while (set[dayKey(d)]) {
+              run += 1;
+              d.setDate(d.getDate() + 1);
+            }
+            if (run > best) best = run;
+          }
+        });
+        $("level-label").textContent = "🎮 Lv." + level;
+        $("streak-label").textContent = "🔥 " + streak + "日連続";
+        $("reward-msg").textContent = done
+          ? "今日クリア！この調子なら、気づいたら痩せてます"
+          : "今日クリアで " + (streak + 1) + "日連続＆レベルアップ！";
+        $("reward-sub").textContent =
+          "達成した日 " + Object.keys(set).length + "日 ・ ベスト " + best + "日連続";
+      }
+      function recItemHtml(r, showBadge) {
+        var meta = TYPE_META[r.type] || TYPE_META.poop;
+        var owner = nameOf(r.person);
+        var chip = "";
+        if (EXERCISE_TYPES.indexOf(r.type) >= 0)
+          chip = '<span class="kind-chip">運動</span>';
+        var badge = showBadge
+          ? '<span class="person-badge ' + r.person + '">' + esc(owner) + "</span>"
+          : "";
+        var kcal =
+          r.type === "meal" && r.calories
+            ? '<span class="rkcal">' + r.calories.toLocaleString() + " kcal</span>"
+            : "";
+        return (
+          '<li><button type="button" class="rec-item" data-rec="' + esc(r.id) + '">' +
+          '<span class="ricon" aria-hidden="true">' + meta.icon + "</span>" +
+          '<span class="rmain"><span class="rlabel">' + meta.label + "</span>" + chip + badge + "</span>" +
+          kcal +
+          '<span class="rtime">' + fmtTime(r.created_at) + "</span>" +
+          "</button></li>"
+        );
+      }
+      function renderLists() {
+        var box = $("lists");
+        var achievedAny = {};
+        ["kengo", "kana"].forEach(function (p) {
+          var s = achievedSetFor(p);
+          Object.keys(s).forEach(function (k) { achievedAny[k] = true; });
+        });
+        var groups = [];
+        var src =
+          view === "today"
+            ? records.filter(function (r) {
+                return r.person === person && isToday(r.created_at);
+              })
+            : records.filter(function (r) { return !isToday(r.created_at); });
+        src.forEach(function (r) {
+          var label = fmtDayLabel(r.created_at);
+          var last = groups[groups.length - 1];
+          if (last && last.label === label) last.items.push(r);
+          else groups.push({ label: label, items: [r], key: dayKey(new Date(r.created_at)) });
+        });
+        if (!loaded) {
+          box.innerHTML = "";
+        } else if (groups.length === 0) {
+          box.innerHTML =
+            '<div class="empty-box">' +
+            (view === "today"
+              ? "今日はまだ記録がありません。<br>上のボタンから、最初の一件を付けましょう。"
+              : "過去の記録はまだありません。") +
+            "</div>";
+        } else {
+          var html = "";
+          groups.forEach(function (g) {
+            html +=
+              '<div class="day-group"><h3>' + esc(g.label) +
+              (achievedAny[g.key] ? '<span class="clear-badge">🎉 クリア！</span>' : "") +
+              '</h3><ul class="rec-list">';
+            g.items.forEach(function (r) {
+              html += recItemHtml(r, view === "history");
+            });
+            html += "</ul></div>";
+          });
+          box.innerHTML = html;
+        }
+        Array.prototype.forEach.call(box.querySelectorAll("[data-rec]"), function (b) {
+          b.addEventListener("click", function () {
+            var id = b.getAttribute("data-rec");
+            var rec = records.find(function (r) { return r.id === id; });
+            if (rec) openEdit(rec);
+          });
+        });
+        /* コレクションは履歴タブの下 */
+        var col = $("collection");
+        if (view === "history") {
+          col.style.display = "block";
+          var mine = collected[person] || [];
+          var html2 =
+            '<h3 class="font-display">🎁 あつめた言葉 <span class="count">' +
+            mine.length + " / " + ALL_WORDS.length + "</span></h3>";
+          if (mine.length === 0) {
+            html2 += '<p class="none">記録すると、ご褒美の言葉がここに溜まっていきます。</p>';
+          } else {
+            html2 += "<ul>";
+            mine.forEach(function (w) {
+              html2 += "<li>" + esc(w) + "</li>";
+            });
+            html2 += "</ul>";
+          }
+          col.innerHTML = html2;
+        } else {
+          col.style.display = "none";
+        }
+      }
+
+      /* ===== オーバーレイ管理 ===== */
+      function placeOverlay(el) {
+        el.style.top = window.scrollY + "px";
+        el.style.height = window.innerHeight + "px";
+      }
+      function openSheet(id) {
+        var ov = $("overlay");
+        ["sheet-meal", "sheet-backfill", "sheet-edit", "sheet-goals", "sheet-onboard"].forEach(
+          function (s) { $(s).style.display = s === id ? "block" : "none"; }
+        );
+        placeOverlay(ov);
+        ov.classList.add("show");
+      }
+      function closeSheets() {
+        $("overlay").classList.remove("show");
+      }
+      Array.prototype.forEach.call(document.querySelectorAll("[data-close]"), function (b) {
+        b.addEventListener("click", closeSheets);
+      });
+
+      /* ===== ガチャご褒美 ===== */
+      function pickWord(level) {
+        var tier = tierForLevel(level);
+        var unlocked = [];
+        for (var i = 0; i < tier; i++) unlocked = unlocked.concat(WORD_TIERS[i]);
+        var mine = collected[person] || [];
+        var fresh = unlocked.filter(function (w) {
+          return mine.indexOf(w) < 0 && recentWords.indexOf(w) < 0;
+        });
+        var freshAny = unlocked.filter(function (w) { return mine.indexOf(w) < 0; });
+        var notRecent = unlocked.filter(function (w) { return recentWords.indexOf(w) < 0; });
+        var pool = fresh.length ? fresh : freshAny.length ? freshAny : notRecent.length ? notRecent : unlocked;
+        return pool[Math.floor(Math.random() * pool.length)];
+      }
+      var rewardTimers = [];
+      function showReward(word, leveledTo) {
+        rewardTimers.forEach(function (t) { window.clearTimeout(t); });
+        rewardTimers = [];
+        var ov = $("reward-overlay");
+        var card = $("reward-card");
+        card.classList.remove("word-phase");
+        $("reward-phase-capsule").style.display = "block";
+        $("reward-phase-open").style.display = "none";
+        $("reward-phase-word").style.display = "none";
+        placeOverlay(ov);
+        ov.classList.add("show");
+        rewardTimers.push(window.setTimeout(function () {
+          $("reward-phase-capsule").style.display = "none";
+          $("reward-phase-open").style.display = "block";
+        }, 620));
+        rewardTimers.push(window.setTimeout(function () {
+          $("reward-phase-open").style.display = "none";
+          $("reward-word").textContent = word;
+          $("levelup-slot").innerHTML =
+            leveledTo !== null
+              ? '<span class="levelup-chip font-display anim-pop">🎉 レベルアップ！ Lv.' + leveledTo + "</span>"
+              : "";
+          card.classList.add("word-phase");
+          $("reward-phase-word").style.display = "block";
+        }, 1120));
+      }
+      $("reward-close").addEventListener("click", function () {
+        rewardTimers.forEach(function (t) { window.clearTimeout(t); });
+        $("reward-overlay").classList.remove("show");
+      });
+
+      /* 記録して、ご褒美を出す共通処理 */
+      async function addRecordAndReward(body) {
+        if (busy) return false;
+        busy = true;
+        var levelBefore = levelOf(person);
+        try {
+          await sbSend("POST", "monte_records", body, "return=minimal");
+        } catch (e) {
+          busy = false;
+          showToast("保存できませんでした。通信を確認してね");
+          return false;
+        }
+        await loadAll();
+        var levelAfter = levelOf(person);
+        var word = pickWord(levelAfter);
+        if ((collected[person] || []).indexOf(word) < 0) {
+          collected[person].push(word);
+          try {
+            await sbSend(
+              "POST",
+              "monte_collected",
+              { person: person, word: word, created_at: new Date().toISOString() },
+              "resolution=ignore-duplicates,return=minimal"
+            );
+          } catch (e) { /* 言葉の保存に失敗しても記録は残す */ }
+        }
+        recentWords = recentWords.concat([word]).slice(-8);
+        try { localStorage.setItem("mg-recent-words", JSON.stringify(recentWords)); } catch (e) {}
+        renderLists();
+        busy = false;
+        showReward(word, levelAfter > levelBefore ? levelAfter : null);
+        return true;
+      }
+
+      /* クイック記録（うんち・運動4種） */
+      Array.prototype.forEach.call(document.querySelectorAll("[data-quick]"), function (b) {
+        b.addEventListener("click", function () {
+          addRecordAndReward({
+            id: newId(),
+            person: person,
+            type: b.getAttribute("data-quick"),
+            calories: null,
+            created_at: new Date().toISOString(),
+          });
+        });
+      });
+
+      /* ===== 食事シート ===== */
+      var mealKcal = 650;
+      var mealPreset = "ふつう";
+      var mealSnack = 0;
+      var mealPhotoUrl = null;
+      function mealPresetsHtml(activeKcal) {
+        var html = "";
+        MEAL_PRESETS.forEach(function (p) {
+          html +=
+            '<button type="button" data-kcal="' + p.kcal + '" data-label="' + p.label +
+            '" aria-pressed="' + (activeKcal === p.kcal) + '">' +
+            '<span class="pl">' + p.label + '</span><span class="pk">' + p.kcal + " kcal</span></button>";
+        });
+        return html;
+      }
+      function renderMealSheet() {
+        $("meal-kcal-val").textContent = mealKcal.toLocaleString();
+        $("meal-presets").innerHTML = mealPresetsHtml(
+          mealPreset ? MEAL_PRESETS.find(function (p) { return p.label === mealPreset; }).kcal : -1
+        );
+        Array.prototype.forEach.call($("meal-presets").querySelectorAll("button"), function (b) {
+          b.addEventListener("click", function () {
+            mealPreset = b.getAttribute("data-label");
+            mealKcal = Number(b.getAttribute("data-kcal"));
+            renderMealSheet();
+          });
+        });
+        Array.prototype.forEach.call($("snack-row").querySelectorAll("[data-snack]"), function (b) {
+          var v = Number(b.getAttribute("data-snack"));
+          b.setAttribute("aria-pressed", mealSnack === v && !$("snack-input").value ? "true" : "false");
+        });
+        $("meal-save").textContent =
+          "保存する（合計 " + (mealKcal + mealSnack).toLocaleString() + " kcal）";
+      }
+      function openMeal() {
+        mealKcal = 650;
+        mealPreset = "ふつう";
+        mealSnack = 0;
+        $("snack-input").value = "";
+        if (mealPhotoUrl) URL.revokeObjectURL(mealPhotoUrl);
+        mealPhotoUrl = null;
+        $("meal-photo-empty").style.display = "block";
+        $("meal-photo-preview").style.display = "none";
+        $("meal-error").style.display = "none";
+        $("meal-title").textContent = nameOf(person) + "さんの食事";
+        renderMealSheet();
+        openSheet("sheet-meal");
+      }
+      $("open-meal").addEventListener("click", openMeal);
+      $("meal-minus").addEventListener("click", function () {
+        mealPreset = "";
+        mealKcal = Math.max(0, mealKcal - 50);
+        renderMealSheet();
+      });
+      $("meal-plus").addEventListener("click", function () {
+        mealPreset = "";
+        mealKcal = mealKcal + 50;
+        renderMealSheet();
+      });
+      Array.prototype.forEach.call($("snack-row").querySelectorAll("[data-snack]"), function (b) {
+        b.addEventListener("click", function () {
+          mealSnack = Number(b.getAttribute("data-snack"));
+          $("snack-input").value = mealSnack === 0 ? "" : "";
+          if (mealSnack !== 0) $("snack-input").value = "";
+          renderMealSheet();
+        });
+      });
+      $("snack-input").addEventListener("input", function () {
+        mealSnack = Number($("snack-input").value) || 0;
+        Array.prototype.forEach.call($("snack-row").querySelectorAll("[data-snack]"), function (b) {
+          b.setAttribute("aria-pressed", "false");
+        });
+        $("meal-save").textContent =
+          "保存する（合計 " + (mealKcal + mealSnack).toLocaleString() + " kcal）";
+      });
+      $("meal-photo-btn").addEventListener("click", function () { $("meal-file").click(); });
+      $("meal-retake").addEventListener("click", function () { $("meal-file").click(); });
+      $("meal-file").addEventListener("change", function () {
+        var f = $("meal-file").files && $("meal-file").files[0];
+        if (!f) return;
+        if (mealPhotoUrl) URL.revokeObjectURL(mealPhotoUrl);
+        mealPhotoUrl = URL.createObjectURL(f);
+        $("meal-photo-img").src = mealPhotoUrl;
+        $("meal-photo-empty").style.display = "none";
+        $("meal-photo-preview").style.display = "block";
+      });
+      $("meal-save").addEventListener("click", async function () {
+        var btn = $("meal-save");
+        btn.disabled = true;
+        var ok = await addRecordAndReward({
+          id: newId(),
+          person: person,
+          type: "meal",
+          calories: mealKcal + mealSnack,
+          created_at: new Date().toISOString(),
+        });
+        btn.disabled = false;
+        if (ok) closeSheets();
+        else {
+          var err = $("meal-error");
+          err.textContent = "保存できませんでした。通信状態を確認してください。";
+          err.style.display = "block";
+        }
+      });
+
+      /* ===== あとから追加シート ===== */
+      var bfType = "meal";
+      var bfKcal = 650;
+      function renderBackfillTypes() {
+        var html = "";
+        ALL_TYPES.forEach(function (t) {
+          var meta = TYPE_META[t];
+          html +=
+            '<button type="button" role="radio" data-type="' + t + '" aria-checked="' + (bfType === t) + '">' +
+            '<span class="ti" aria-hidden="true">' + meta.icon + '</span><span class="tl">' + meta.label + "</span></button>";
+        });
+        $("backfill-types").innerHTML = html;
+        Array.prototype.forEach.call($("backfill-types").querySelectorAll("button"), function (b) {
+          b.addEventListener("click", function () {
+            bfType = b.getAttribute("data-type");
+            renderBackfillTypes();
+            $("backfill-meal-fields").style.display = bfType === "meal" ? "block" : "none";
+          });
+        });
+      }
+      function renderBackfillPresets() {
+        $("backfill-presets").innerHTML = mealPresetsHtml(bfKcal);
+        Array.prototype.forEach.call($("backfill-presets").querySelectorAll("button"), function (b) {
+          b.addEventListener("click", function () {
+            bfKcal = Number(b.getAttribute("data-kcal"));
+            $("backfill-kcal").value = bfKcal;
+            renderBackfillPresets();
+          });
+        });
+      }
+      function openBackfill() {
+        bfType = "meal";
+        bfKcal = 650;
+        $("backfill-title").textContent = nameOf(person) + "さんの記録を追加";
+        $("backfill-when").value = toLocalInput(new Date().toISOString());
+        $("backfill-kcal").value = bfKcal;
+        $("backfill-snack").value = "";
+        $("backfill-error").style.display = "none";
+        $("backfill-meal-fields").style.display = "block";
+        renderBackfillTypes();
+        renderBackfillPresets();
+        openSheet("sheet-backfill");
+      }
+      $("open-backfill").addEventListener("click", openBackfill);
+      $("backfill-kcal").addEventListener("input", function () {
+        bfKcal = Number($("backfill-kcal").value) || 0;
+        renderBackfillPresets();
+      });
+      $("backfill-save").addEventListener("click", async function () {
+        var when = $("backfill-when").value;
+        var err = $("backfill-error");
+        if (!when) {
+          err.textContent = "日時を選んでください。";
+          err.style.display = "block";
+          return;
+        }
+        var snack = Number($("backfill-snack").value) || 0;
+        var btn = $("backfill-save");
+        btn.disabled = true;
+        var ok = await addRecordAndReward({
+          id: newId(),
+          person: person,
+          type: bfType,
+          calories: bfType === "meal" ? bfKcal + snack : null,
+          created_at: new Date(when).toISOString(),
+        });
+        btn.disabled = false;
+        if (ok) closeSheets();
+        else {
+          err.textContent = "保存できませんでした。通信状態を確認してください。";
+          err.style.display = "block";
+        }
+      });
+
+      /* ===== 編集シート ===== */
+      var editing = null;
+      var editType = null;
+      var editKcal = 0;
+      function renderEditTypes() {
+        var html = "";
+        EXERCISE_TYPES.forEach(function (t) {
+          var meta = TYPE_META[t];
+          html +=
+            '<button type="button" role="radio" data-type="' + t + '" aria-checked="' + (editType === t) + '">' +
+            '<span class="ti" aria-hidden="true">' + meta.icon + '</span><span class="tl">' + meta.label + "</span></button>";
+        });
+        $("edit-types").innerHTML = html;
+        Array.prototype.forEach.call($("edit-types").querySelectorAll("button"), function (b) {
+          b.addEventListener("click", function () {
+            editType = b.getAttribute("data-type");
+            renderEditTypes();
+          });
+        });
+      }
+      function renderEditPresets() {
+        $("edit-presets").innerHTML = mealPresetsHtml(editKcal);
+        Array.prototype.forEach.call($("edit-presets").querySelectorAll("button"), function (b) {
+          b.addEventListener("click", function () {
+            editKcal = Number(b.getAttribute("data-kcal"));
+            $("edit-kcal-val").textContent = editKcal.toLocaleString();
+            renderEditPresets();
+          });
+        });
+      }
+      function openEdit(rec) {
+        editing = rec;
+        editType = rec.type;
+        editKcal = rec.calories || 0;
+        var meta = TYPE_META[rec.type] || TYPE_META.poop;
+        $("edit-title").textContent = meta.label + "の記録";
+        $("edit-owner").textContent = nameOf(rec.person) + "さんの記録です";
+        $("edit-when").value = toLocalInput(rec.created_at);
+        $("edit-type-wrap").style.display =
+          EXERCISE_TYPES.indexOf(rec.type) >= 0 ? "block" : "none";
+        $("edit-meal-fields").style.display = rec.type === "meal" ? "block" : "none";
+        $("edit-kcal-val").textContent = editKcal.toLocaleString();
+        $("edit-error").style.display = "none";
+        $("edit-delete").style.display = "block";
+        $("edit-delete-confirm").style.display = "none";
+        renderEditTypes();
+        renderEditPresets();
+        openSheet("sheet-edit");
+      }
+      $("edit-minus").addEventListener("click", function () {
+        editKcal = Math.max(0, editKcal - 50);
+        $("edit-kcal-val").textContent = editKcal.toLocaleString();
+        renderEditPresets();
+      });
+      $("edit-plus").addEventListener("click", function () {
+        editKcal = editKcal + 50;
+        $("edit-kcal-val").textContent = editKcal.toLocaleString();
+        renderEditPresets();
+      });
+      $("edit-save").addEventListener("click", async function () {
+        if (!editing) return;
+        var when = $("edit-when").value;
+        var err = $("edit-error");
+        if (!when) {
+          err.textContent = "日時を選んでください。";
+          err.style.display = "block";
+          return;
+        }
+        var body = { created_at: new Date(when).toISOString() };
+        if (EXERCISE_TYPES.indexOf(editing.type) >= 0) body.type = editType;
+        if (editing.type === "meal") body.calories = editKcal;
+        var btn = $("edit-save");
+        btn.disabled = true;
+        try {
+          await sbSend(
+            "PATCH",
+            "monte_records?id=eq." + encodeURIComponent(editing.id),
+            body,
+            "return=minimal"
+          );
+          await loadAll();
+          closeSheets();
+          showToast("記録を更新しました");
+        } catch (e) {
+          err.textContent = "保存できませんでした。通信状態を確認してください。";
+          err.style.display = "block";
+        }
+        btn.disabled = false;
+      });
+      $("edit-delete").addEventListener("click", function () {
+        $("edit-delete").style.display = "none";
+        $("edit-delete-confirm").style.display = "flex";
+      });
+      $("edit-delete-no").addEventListener("click", function () {
+        $("edit-delete").style.display = "block";
+        $("edit-delete-confirm").style.display = "none";
+      });
+      $("edit-delete-yes").addEventListener("click", async function () {
+        if (!editing) return;
+        var err = $("edit-error");
+        try {
+          await sbSend(
+            "DELETE",
+            "monte_records?id=eq." + encodeURIComponent(editing.id),
+            null,
+            "return=minimal"
+          );
+          await loadAll();
+          closeSheets();
+          showToast("記録を削除しました");
+        } catch (e) {
+          err.textContent = "削除できませんでした。通信状態を確認してください。";
+          err.style.display = "block";
+        }
+      });
+
+      /* ===== 目標フォーム（設定・初期設定で共用） ===== */
+      function goalPickerHtml(prefix, state) {
+        var exHtml = "";
+        [2, 3, 4, 5].forEach(function (n) {
+          exHtml +=
+            '<button type="button" data-gp="ex" data-v="' + n + '" aria-pressed="' + (state.ex === n) + '">' +
+            n.toLocaleString() + "回</button>";
+        });
+        var kcalHtml = "";
+        [1800, 2000, 2200].forEach(function (n) {
+          kcalHtml +=
+            '<button type="button" data-gp="kcal" data-v="' + n + '" aria-pressed="' + (state.kcal === n) + '">' +
+            n.toLocaleString() + "kcal</button>";
+        });
+        return (
+          '<div class="goal-picker"><p class="gp-label font-display">🏃 運動（1日）</p><div class="gp-row">' +
+          exHtml +
+          '<label><input type="number" inputmode="numeric" class="num-input w20" data-gp-input="ex" value="' + state.ex + '" aria-label="運動の目標回数を直接入力">回</label>' +
+          "</div></div>" +
+          '<div class="goal-picker"><p class="gp-label font-display">🍚 食事の上限（1日）</p><div class="gp-row">' +
+          kcalHtml +
+          '<label><input type="number" inputmode="numeric" class="num-input w24" data-gp-input="kcal" value="' + state.kcal + '" aria-label="食事の上限カロリーを直接入力">kcal</label>' +
+          "</div></div>"
+        );
+      }
+      function bindGoalPicker(container, state, rerender) {
+        container.innerHTML = goalPickerHtml("", state);
+        Array.prototype.forEach.call(container.querySelectorAll("[data-gp]"), function (b) {
+          b.addEventListener("click", function () {
+            state[b.getAttribute("data-gp")] = Number(b.getAttribute("data-v"));
+            rerender();
+          });
+        });
+        Array.prototype.forEach.call(container.querySelectorAll("[data-gp-input]"), function (inp) {
+          inp.addEventListener("input", function () {
+            state[inp.getAttribute("data-gp-input")] = Number(inp.value) || 0;
+            Array.prototype.forEach.call(container.querySelectorAll("[data-gp]"), function (b) {
+              b.setAttribute(
+                "aria-pressed",
+                state[b.getAttribute("data-gp")] === Number(b.getAttribute("data-v")) ? "true" : "false"
+              );
+            });
+          });
+        });
+      }
+      function validateGoals(state) {
+        if (state.kcal < 500 || state.kcal > 6000)
+          return "食事の上限は500〜6000 kcalで入力してください。";
+        if (state.ex < 0 || state.ex > 20)
+          return "運動は0〜20回で入力してください。";
+        return null;
+      }
+      async function saveProfile(p, state) {
+        await sbSend(
+          "POST",
+          "monte_profiles",
+          {
+            person: p,
+            exercise_goal: state.ex,
+            calorie_limit: state.kcal,
+            updated_at: new Date().toISOString(),
+          },
+          "resolution=merge-duplicates,return=minimal"
+        );
+        profiles[p] = { exercise_goal: state.ex, calorie_limit: state.kcal };
+      }
+
+      /* ===== 目標変更シート ===== */
+      var goalState = { ex: 3, kcal: 2000 };
+      function renderGoalsSheet() {
+        bindGoalPicker($("goals-fields"), goalState, renderGoalsSheet);
+      }
+      $("open-goals").addEventListener("click", function () {
+        var prof = profileOf(person);
+        goalState = { ex: prof.exercise_goal, kcal: prof.calorie_limit };
+        $("goals-title").textContent = nameOf(person) + "さんのミニマム目標";
+        $("goals-note").textContent =
+          nameOf(person) + "さんの分だけ変わります。いつでも変えられます。";
+        $("goals-error").style.display = "none";
+        renderGoalsSheet();
+        openSheet("sheet-goals");
+      });
+      $("goals-save").addEventListener("click", async function () {
+        var err = $("goals-error");
+        var msg = validateGoals(goalState);
+        if (msg) {
+          err.textContent = msg;
+          err.style.display = "block";
+          return;
+        }
+        var btn = $("goals-save");
+        btn.disabled = true;
+        try {
+          await saveProfile(person, goalState);
+          await loadAll();
+          closeSheets();
+          showToast("目標を変更しました");
+        } catch (e) {
+          err.textContent = "保存できませんでした。通信状態を確認してください。";
+          err.style.display = "block";
+        }
+        btn.disabled = false;
+      });
+
+      /* ===== 初期設定（初回だけ） ===== */
+      var onboardWho = person;
+      var onboardState = { ex: 3, kcal: 2000 };
+      function renderOnboard() {
+        var html = "";
+        PEOPLE.forEach(function (p) {
+          html +=
+            '<button type="button" data-who="' + p.person + '" aria-pressed="' + (onboardWho === p.person) + '">' +
+            esc(p.name) + "さん</button>";
+        });
+        $("onboard-who").innerHTML = html;
+        Array.prototype.forEach.call($("onboard-who").querySelectorAll("button"), function (b) {
+          b.addEventListener("click", function () {
+            onboardWho = b.getAttribute("data-who");
+            var prof = profileOf(onboardWho);
+            onboardState = { ex: prof.exercise_goal, kcal: prof.calorie_limit };
+            renderOnboard();
+          });
+        });
+        bindGoalPicker($("onboard-fields"), onboardState, renderOnboard);
+      }
+      async function finishOnboard(useCurrent) {
+        var err = $("onboard-error");
+        if (useCurrent) {
+          var msg = validateGoals(onboardState);
+          if (msg) {
+            err.textContent = msg;
+            err.style.display = "block";
+            return;
+          }
+        }
+        try {
+          await saveProfile(onboardWho, onboardState);
+        } catch (e) {
+          err.textContent = "保存できませんでした。通信状態を確認してください。";
+          err.style.display = "block";
+          return;
+        }
+        person = onboardWho;
+        hasDevicePerson = true;
+        try { localStorage.setItem("mg-person", person); } catch (e) {}
+        closeSheets();
+        await loadAll();
+        showToast("設定が終わりました。さっそく記録しましょう！");
+      }
+      $("onboard-save").addEventListener("click", function () { finishOnboard(true); });
+      $("onboard-skip").addEventListener("click", function () {
+        var prof = profileOf(onboardWho);
+        onboardState = { ex: prof.exercise_goal, kcal: prof.calorie_limit };
+        finishOnboard(false);
+      });
+
+      /* ===== タブ切り替え ===== */
+      function setView(v) {
+        view = v;
+        $("tab-today").setAttribute("aria-selected", v === "today" ? "true" : "false");
+        $("tab-history").setAttribute("aria-selected", v === "history" ? "true" : "false");
+        renderLists();
+      }
+      $("tab-today").addEventListener("click", function () { setView("today"); });
+      $("tab-history").addEventListener("click", function () { setView("history"); });
+      $("retry-btn").addEventListener("click", function () { loadAll(); });
+
+      /* ===== 起動 ===== */
+      render();
+      loadAll().then(function () {
+        if (!hasDevicePerson) {
+          onboardWho = person;
+          var prof = profileOf(person);
+          onboardState = { ex: prof.exercise_goal, kcal: prof.calorie_limit };
+          renderOnboard();
+          openSheet("sheet-onboard");
+        }
+      });
+    </script>
+  </body>
+</html>
