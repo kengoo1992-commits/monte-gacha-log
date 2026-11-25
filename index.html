@@ -5,259 +5,262 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="dark" />
     <link rel="icon" href="data:," />
-    <title>モンテガチャログ リンク版</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Zen+Maru+Gothic:wght@500;700;900&display=swap"
-      rel="stylesheet"
-    />
+    <title>記録</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0/dist/mobilenet.min.js"></script>
     <style>
       :root {
         color-scheme: dark;
-        --bg: #060b1d;
-        --surface: #101a36;
-        --surface-2: #0c142c;
-        --surface-alt: #1b2748;
-        --text: #f5f7ff;
-        --dim: #b9c4e2;
-        --border: #2c3d6e;
-        --accent: #ff8c1a;
-        --accent-deep: #e56f00;
-        --accent-ink: #221100;
-        --accent-soft: #2e1f0d;
-        --blue: #2f6bff;
-        --blue-bright: #57a8ff;
-        --meal: #ff9e2c;
-        --meal-soft: #33200a;
-        --poop-soft: #241d10;
-        --exercise: #57a8ff;
-        --exercise-soft: #16294d;
-        --danger: #ff5a4d;
-        --danger-soft: #3a1512;
-        --gold: #ff9f1c;
-        --gold-soft: #2e230a;
-        --scouter: #3dff9d;
-        --scouter-dim: #1f7a4d;
-        --radius: 24px;
+        --bg: #000000;
+        --surface: #232329;
+        --surface-2: #2b2b33;
+        --surface-3: #3a3a44;
+        --text: #ffffff;
+        --dim: #c9c9d1;
+        --faint: #a9a9b4;
+        --line: #3a3a44;
+        --accent: #ffffff;
+        --accent-soft: #26262e;
+        --green: #4ade80;
+        --red: #ff7a70;
+        --gold: #e8b34b;
+        /* 項目ごとのカテゴリ色（ヘルスケア式） */
+        --c-exercise: #ff8a3d;
+        --c-meal: #4ade80;
+        --c-goal: #ffb340;
+        --c-stock: #6ea8ff;
+        --c-capsule: #f5a623;
+        --radius: 16px;
       }
       * { box-sizing: border-box; }
       html, body { margin: 0; padding: 0; }
       body {
-        background-color: var(--bg);
-        background-image:
-          radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.65) 50%, transparent 51%),
-          radial-gradient(1.5px 1.5px at 130px 90px, rgba(255,255,255,0.45) 50%, transparent 51%),
-          radial-gradient(1.5px 1.5px at 70px 160px, rgba(140,180,255,0.55) 50%, transparent 51%),
-          radial-gradient(1px 1px at 180px 190px, rgba(255,255,255,0.5) 50%, transparent 51%),
-          linear-gradient(180deg, #0a1230 0%, #060b1d 45%, #04060f 100%);
-        background-size: 200px 200px, 260px 260px, 300px 300px, 340px 340px, 100% 100%;
+        background: var(--bg);
         color: var(--text);
-        font-family: system-ui, -apple-system, "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
-        font-weight: 500;
+        font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Kaku Gothic ProN", "Noto Sans JP", system-ui, sans-serif;
+        font-weight: 600;
         -webkit-text-size-adjust: 100%;
+        letter-spacing: 0.01em;
       }
-      .font-display { font-family: "Zen Maru Gothic", system-ui, sans-serif; }
-      .font-num { font-family: "Orbitron", "Zen Maru Gothic", system-ui, sans-serif; }
       button, [role="button"], select, summary,
       input:not([type="checkbox"], [type="radio"]) { min-height: 2.75rem; }
       button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
-      button:disabled { opacity: 0.5; }
-      :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-      .wrap { position: relative; max-width: 36rem; margin: 0 auto; padding: 0 1rem 5rem; }
-      h1.title { margin: 0; padding-top: 1rem; text-align: center; font-size: 1.5rem; font-weight: 900; letter-spacing: 0.06em; color: var(--accent); text-shadow: 0 0 22px rgba(255,140,26,0.35); }
-      .tagline { margin: 0.35rem 0 0; text-align: center; font-size: 1rem; font-weight: 900; color: var(--dim); letter-spacing: 0.08em; }
-      .tagline b { color: var(--scouter); font-weight: 900; }
+      button:disabled { opacity: 0.45; }
+      :focus-visible { outline: 3px solid #ffffff; outline-offset: 2px; }
+      .wrap { max-width: 40rem; margin: 0 auto; padding: 0 1.25rem 4rem; }
+      /* セクションの塊（ダークグレーの面＋枠線＋影で区切る） */
+      .card { border: 2px solid var(--line); border-radius: 20px; background: #1c1c21; box-shadow: 0 3px 12px rgba(0,0,0,0.45); padding: 1.4rem 1.25rem 1.5rem; }
+      .card-hero { border-color: #57451a; }
+      .card-stock { border-color: #2c4472; }
 
-      /* ドラゴンボール（星の玉） */
-      .dballs { margin-top: 0.6rem; display: flex; justify-content: center; align-items: center; gap: 0.45rem; }
-      .dball { display: inline-flex; align-items: center; justify-content: center; width: 1.65rem; height: 1.65rem; border-radius: 999px; background: radial-gradient(circle at 32% 28%, #ffd98a 0%, #ff9f1c 45%, #e56f00 78%, #b34f00 100%); color: #d92b1f; font-weight: 900; line-height: 1; box-shadow: inset -2px -3px 6px rgba(120,40,0,0.45), 0 2px 6px rgba(0,0,0,0.45); }
-      .dball.s1 { font-size: 0.8rem; }
-      .dball.s2 { font-size: 0.62rem; }
-      .dball.s3 { font-size: 0.52rem; }
-      .dball.s4 { font-size: 0.45rem; }
-      .dball.s5 { font-size: 0.4rem; }
-      .dball.s6 { font-size: 0.36rem; }
-      .dball.s7 { font-size: 0.33rem; }
-
+      /* ヘッダー */
+      .app-title { margin: 0; padding-top: 1.75rem; font-size: 2.6rem; font-weight: 900; letter-spacing: -0.02em; line-height: 1.1; }
+      .app-title .dot { color: var(--accent); }
       /* 人の切り替え */
-      .person-tabs { margin-top: 0.9rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem; padding: 0.25rem; border: 2px solid var(--border); border-radius: 999px; background: var(--surface-2); }
-      .person-tabs button { border-radius: 999px; padding: 0.8rem 0.25rem; font-size: 1.55rem; font-weight: 900; color: var(--dim); }
-      .person-tabs button[aria-selected="true"] { background: linear-gradient(180deg, #ffa02e, var(--accent-deep)); color: var(--accent-ink); box-shadow: 0 2px 10px rgba(255,140,26,0.45); }
+      .person-tabs { margin-top: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border: 2px solid var(--line); border-radius: 999px; background: #1c1c21; }
+      .person-tabs button { border-radius: 999px; padding: 0.65rem 0.25rem; font-size: 1.05rem; font-weight: 800; color: var(--dim); }
+      .person-tabs button[aria-selected="true"] { background: #ffffff; color: #000000; }
 
-      /* 通信エラー・お知らせ（流れの中に出す） */
-      .net-error { display: none; margin-top: 0.8rem; border-radius: 16px; background: var(--danger-soft); color: var(--danger); padding: 0.8rem 1rem; font-weight: 900; text-align: center; }
+      .net-error { display: none; margin-top: 1rem; border: 2px solid #8a3a3f; border-radius: 12px; background: #3d1719; color: #ffb3ad; padding: 0.9rem 1rem; font-weight: 800; text-align: center; }
       .net-error.show { display: block; }
-      .net-error button { text-decoration: underline; font-weight: 900; color: var(--danger); min-height: 2rem; padding: 0 0.5rem; }
-      .toast { display: none; margin-top: 0.8rem; border-radius: 999px; background: var(--accent); color: var(--accent-ink); padding: 0.7rem 1.2rem; font-weight: 900; text-align: center; }
+      .net-error button { text-decoration: underline; font-weight: 800; color: #ffb3ad; min-height: 2rem; padding: 0 0.5rem; }
+      .toast { display: none; margin-top: 1rem; border-radius: 999px; background: #ffffff; color: #000000; padding: 0.7rem 1.2rem; font-weight: 800; text-align: center; }
       .toast.show { display: block; }
 
-      /* ミッションカード */
-      .card { margin-top: 0.9rem; border: 1px solid var(--border); border-radius: var(--radius); background: linear-gradient(180deg, #121e3e, var(--surface)); padding: 1rem; box-shadow: 0 6px 18px rgba(0,0,0,0.35); }
-      .missing-box { border-radius: 18px; padding: 1rem; text-align: center; }
-      .missing-box.todo { border: 2px solid var(--danger); background: var(--danger-soft); }
-      .missing-box.done { background: linear-gradient(135deg, #ffa02e 0%, var(--accent) 55%, var(--accent-deep) 100%); color: var(--accent-ink); box-shadow: 0 4px 16px rgba(255,140,26,0.4); }
-      .missing-box .big { font-size: 1.9rem; font-weight: 900; line-height: 1.35; margin: 0.2rem 0 0; }
-      .missing-box .mid { font-size: 1.45rem; font-weight: 900; line-height: 1.35; margin: 0.2rem 0 0; }
-      .missing-box .small { font-size: 1rem; font-weight: 900; margin: 0.3rem 0 0; }
-      .missing-box.todo .small, .missing-box.todo .cap { color: var(--danger); }
-      .missing-box .cap { font-size: 1.1rem; font-weight: 900; margin: 0; }
-      .mission-head { margin-top: 0.9rem; display: flex; align-items: flex-end; justify-content: space-between; gap: 0.5rem; }
-      .mission-head h2 { margin: 0; font-size: 1.15rem; font-weight: 900; }
-      .mission-head h2::before { content: ""; display: inline-block; width: 0.55rem; height: 1.05rem; margin-right: 0.45rem; border-radius: 2px; background: var(--accent); vertical-align: -0.12rem; }
-      .goal-btn { border-radius: 999px; background: var(--surface-alt); padding: 0.45rem 1rem; font-size: 1rem; font-weight: 900; color: var(--blue-bright); }
-      .goal-row { margin-top: 1.1rem; display: flex; align-items: center; gap: 1rem; }
-      .goal-row .name { font-size: 1.9rem; font-weight: 900; margin: 0; }
-      .goal-row .status { margin-left: auto; font-size: 1.8rem; font-weight: 900; text-align: right; }
-      .status.ok { color: var(--scouter); }
-      .status.ng { color: var(--danger); }
-      .meter { margin-top: 0.5rem; height: 2.2rem; width: 100%; overflow: hidden; border-radius: 999px; border: 2px solid var(--border); background: var(--surface-2); }
-      .meter > div { height: 100%; border-radius: 999px; transition: width 0.3s; }
-      .meter-label { margin: 0.35rem 0 0; font-size: 1.1rem; font-weight: 900; font-family: "Orbitron", "Zen Maru Gothic", system-ui, sans-serif; letter-spacing: 0.04em; }
-      .ring-wrap { position: relative; width: 88px; height: 88px; flex-shrink: 0; }
-      .ring-wrap span { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 900; font-family: "Orbitron", "Zen Maru Gothic", system-ui, sans-serif; }
+      /* ヒーロー（達成日数・連続日数） */
+      .hero { margin-top: 1.5rem; }
+      .hero-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; }
+      .hero-label { margin: 0; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.18em; color: var(--c-goal); }
+      .hero-level { margin: 0.1rem 0 0; font-size: 5.2rem; font-weight: 900; line-height: 0.95; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+      .hero-level small { font-size: 1.6rem; font-weight: 900; color: var(--dim); letter-spacing: 0; }
+      .hero-streak { text-align: right; flex-shrink: 0; }
+      .hero-streak .num { margin: 0; font-size: 2.6rem; font-weight: 900; line-height: 1; color: var(--c-goal); font-variant-numeric: tabular-nums; }
+      .hero-streak .cap { margin: 0.25rem 0 0; font-size: 0.8rem; font-weight: 800; letter-spacing: 0.14em; color: var(--dim); }
+      .hero-msg { margin: 0.9rem 0 0; font-size: 1.05rem; font-weight: 700; line-height: 1.55; }
+      .hero-sub { margin: 0.3rem 0 0; font-size: 0.92rem; font-weight: 700; color: var(--dim); }
+
+      /* 今日の状態 */
+      .today-head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; }
+      .today-head h2 { margin: 0; font-size: 1.7rem; font-weight: 900; letter-spacing: -0.01em; }
+      .goal-btn { border: 2px solid var(--line); border-radius: 999px; background: var(--surface); padding: 0.5rem 1rem; font-size: 0.9rem; font-weight: 800; color: var(--text); white-space: nowrap; }
+      .stat-block { margin-top: 1.1rem; border: 2px solid var(--line); border-radius: 16px; background: var(--surface); padding: 1.05rem 1.1rem 1.15rem; }
+      .stat-block.ex { background: #2a1e14; border-color: #57402a; }
+      .stat-block.meal { background: #14261a; border-color: #2c5236; }
+      .stat-row { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; }
+      .stat-name { margin: 0; font-size: 1rem; font-weight: 800; color: var(--dim); letter-spacing: 0.06em; }
+      .stat-block.ex .stat-name { color: var(--c-exercise); font-size: 1.05rem; }
+      .stat-block.meal .stat-name { color: var(--c-meal); font-size: 1.05rem; }
+      .stat-frac { margin: 0; font-size: 2rem; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
+      .stat-frac small { font-size: 1rem; font-weight: 800; color: var(--dim); }
+      .stat-frac .unit { font-size: 0.95rem; font-weight: 800; color: var(--dim); }
+      .stat-note { margin: 0.45rem 0 0; font-size: 0.9rem; font-weight: 700; }
+      .stat-note.ok { color: var(--green); }
+      .stat-note.ng { color: var(--red); }
+      .stat-note.plain { color: var(--dim); }
+      .segments { margin-top: 0.7rem; display: flex; gap: 5px; }
+      .segments i { display: block; height: 8px; flex: 1; border-radius: 999px; background: var(--surface-3); }
+      .segments i.on { background: #ffffff; }
+      .segments i.over { background: #e5484d; }
+      .segments i.done { background: var(--green); }
+      .segments.ex i.on { background: var(--c-exercise); }
+      .segments.meal i.on { background: var(--c-meal); }
+      .segments.goal i.on { background: var(--c-goal); }
+      .stock .segments i.on { background: var(--c-stock); }
+      .clear-banner { margin-top: 1.75rem; border-radius: var(--radius); background: #1f7a38; color: #ffffff; padding: 1.1rem 1.25rem; }
+      .clear-banner p { margin: 0; font-size: 1.45rem; font-weight: 900; line-height: 1.35; }
+      .clear-banner .sub { margin: 0.25rem 0 0; font-size: 0.95rem; font-weight: 700; }
+      /* 直近7日のミニ棒グラフ */
+      .wc-cap { margin: 0.95rem 0 0; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.1em; color: var(--dim); }
+      .week-chart { margin-top: 0.45rem; display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+      .wc-col { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; }
+      .wc-bar-wrap { height: 2.8rem; width: 100%; display: flex; align-items: flex-end; }
+      .wc-bar { width: 100%; border-radius: 4px 4px 2px 2px; }
+      .wc-bar.past { opacity: 0.38; }
+      .week-chart.ex .wc-bar { background: var(--c-exercise); }
+      .week-chart.meal .wc-bar { background: var(--c-meal); }
+      .wc-day { font-size: 0.72rem; font-weight: 800; color: var(--dim); }
+      .wc-col.today .wc-day { color: var(--text); font-weight: 900; }
+
+      /* 通算100日 */
+      .milestone { margin-top: 2rem; border-top: 2px solid var(--line); padding-top: 1.5rem; }
+      .milestone .stat-name { color: var(--c-goal); }
+      .milestone .m-frac { margin: 0.35rem 0 0; font-size: 1.15rem; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
+      .milestone .m-note { margin: 0.4rem 0 0; font-size: 0.92rem; font-weight: 700; color: var(--dim); line-height: 1.6; }
 
       /* 記録ボタン */
-      .btn-grid { margin-top: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-      .big-btn { display: flex; min-height: 148px; flex-direction: column; align-items: center; justify-content: center; gap: 0.2rem; border-radius: 28px; border: 2px solid var(--border); background: var(--surface); padding: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.35); }
-      .big-btn:active { transform: scale(0.98); }
-      .big-btn .icon { font-size: 56px; line-height: 1; }
-      .big-btn .label { font-size: 1.9rem; font-weight: 900; }
-      .big-btn .sub { font-size: 1rem; font-weight: 900; color: var(--dim); }
-      .big-btn.poop { background: var(--poop-soft); border-color: #8a6d3b; }
-      .big-btn.exercise { background: var(--exercise-soft); border-color: var(--blue); }
-      .big-btn.meal { background: linear-gradient(160deg, #ffa02e, var(--accent-deep)); border-color: #ffb35c; color: var(--accent-ink); }
-      .big-btn.meal .sub { color: inherit; opacity: 0.9; }
-      .grid-note { margin: 0.5rem 0 0; text-align: center; font-size: 1rem; font-weight: 900; color: var(--dim); }
-      .backfill-btn { margin-top: 0.8rem; width: 100%; border: 1px dashed var(--blue-bright); border-radius: var(--radius); background: var(--surface-2); padding: 0.8rem; font-size: 1rem; font-weight: 700; color: var(--blue-bright); }
-
-      /* ご褒美エリア（スカウター風パネル） */
-      .reward-area { margin-top: 1rem; border: 2px solid var(--scouter-dim); border-radius: var(--radius); background: linear-gradient(180deg, rgba(61,255,157,0.08), rgba(61,255,157,0.02)), var(--surface-2); padding: 0.9rem 1rem; box-shadow: inset 0 0 24px rgba(61,255,157,0.06), 0 4px 14px rgba(0,0,0,0.35); }
-      .reward-area .row { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; }
-      .reward-area .lv { font-size: 1.9rem; font-weight: 900; color: var(--accent); margin: 0; font-family: "Orbitron", "Zen Maru Gothic", system-ui, sans-serif; letter-spacing: 0.03em; }
-      .reward-area .streak { font-size: 1.9rem; font-weight: 900; margin: 0; color: var(--scouter); font-family: "Orbitron", "Zen Maru Gothic", system-ui, sans-serif; letter-spacing: 0.03em; text-shadow: 0 0 14px rgba(61,255,157,0.35); }
-      .reward-area .msg { margin: 0.3rem 0 0; font-size: 1.1rem; font-weight: 900; line-height: 1.5; }
-      .reward-area .frac { margin: 0.45rem 0 0; font-size: 1.6rem; font-weight: 900; font-family: "Orbitron", "Zen Maru Gothic", system-ui, sans-serif; letter-spacing: 0.03em; }
-      .reward-area .sub { margin: 0.15rem 0 0; font-size: 0.9rem; font-weight: 900; color: var(--dim); }
-      .milestone { margin-top: 0.8rem; border-top: 2px dashed var(--border); padding-top: 0.7rem; }
-      .milestone .m-label { margin: 0; font-size: 1.15rem; font-weight: 900; display: flex; align-items: center; gap: 0.5rem; }
-      .milestone .m-label::before { content: "★"; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 1.9rem; height: 1.9rem; border-radius: 999px; background: radial-gradient(circle at 32% 28%, #ffd98a 0%, #ff9f1c 45%, #e56f00 78%, #b34f00 100%); color: #d92b1f; font-size: 0.95rem; box-shadow: inset -2px -3px 6px rgba(120,40,0,0.45), 0 2px 6px rgba(0,0,0,0.45); }
-      .milestone .meter { margin-top: 0.45rem; height: 1.4rem; }
-      .milestone .m-note { margin: 0.35rem 0 0; font-size: 0.95rem; font-weight: 900; color: var(--dim); }
+      .record-head { margin: 0; font-size: 1.7rem; font-weight: 900; letter-spacing: -0.01em; }
+      .btn-grid { margin-top: 1.1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+      .big-btn { display: flex; min-height: 7.5rem; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 0.6rem; border: 2px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: 0 2px 6px rgba(0,0,0,0.4); padding: 1.1rem; text-align: left; }
+      .big-btn:active { transform: scale(0.98); background: var(--surface-2); }
+      .big-btn .icon { font-size: 2rem; line-height: 1; }
+      .big-btn .label { font-size: 1.35rem; font-weight: 900; }
+      .big-btn.meal { background: #ffffff; border-color: #ffffff; color: #000000; grid-column: 1 / -1; min-height: 6.5rem; flex-direction: row; align-items: center; }
+      .big-btn.meal .label { font-size: 1.6rem; }
+      .big-btn.meal .sub { font-size: 0.9rem; font-weight: 700; opacity: 0.75; display: block; margin-top: 0.15rem; }
+      .grid-note { margin: 0.7rem 0 0; font-size: 0.9rem; font-weight: 700; color: var(--dim); }
+      .backfill-btn { margin-top: 1rem; width: 100%; border: 2px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: 0 2px 6px rgba(0,0,0,0.4); padding: 1rem; font-size: 1rem; font-weight: 800; color: var(--text); }
 
       /* 記録リスト */
-      .view-tabs { margin-top: 1.6rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem; padding: 0.25rem; border-radius: 999px; background: var(--surface-2); border: 2px solid var(--border); }
-      .view-tabs button { border-radius: 999px; padding: 0.7rem 0.25rem; font-size: 1.25rem; font-weight: 900; color: var(--dim); }
-      .view-tabs button[aria-selected="true"] { background: linear-gradient(180deg, #4a83ff, var(--blue)); color: #fff; box-shadow: 0 2px 10px rgba(47,107,255,0.45); }
-      .day-group { margin-top: 1rem; }
-      .day-group h3 { margin: 0; font-size: 1rem; font-weight: 900; color: var(--dim); }
-      .clear-badge { margin-left: 0.5rem; border-radius: 999px; background: var(--accent); padding: 0.15rem 0.6rem; font-size: 0.85rem; font-weight: 900; color: var(--accent-ink); }
-      .rec-list { margin: 0.5rem 0 0; padding: 0; list-style: none; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.3); overflow: hidden; }
-      .rec-list li + li { border-top: 1px solid var(--border); }
-      .rec-item { display: flex; width: 100%; align-items: center; gap: 0.75rem; padding: 1rem; text-align: left; }
-      .rec-item .ricon { font-size: 1.9rem; }
+      .view-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border: 2px solid var(--line); border-radius: 999px; background: var(--surface); }
+      .view-tabs button { border-radius: 999px; padding: 0.65rem 0.25rem; font-size: 1rem; font-weight: 800; color: var(--dim); }
+      .view-tabs button[aria-selected="true"] { background: #ffffff; color: #000000; }
+      .day-group { margin-top: 1.75rem; }
+      .day-group h3 { margin: 0; font-size: 1rem; font-weight: 900; color: var(--text); letter-spacing: 0.05em; }
+      .clear-badge { margin-left: 0.5rem; border-radius: 999px; background: var(--c-goal); padding: 0.15rem 0.6rem; font-size: 0.8rem; font-weight: 900; color: #241a00; }
+      .rec-list { margin: 0.4rem 0 0; padding: 0; list-style: none; }
+      .rec-list li + li { border-top: 2px solid var(--line); }
+      .rec-item { display: flex; width: 100%; align-items: center; gap: 0.9rem; padding: 1rem 0.1rem; text-align: left; }
+      .rec-item .ricon { font-size: 1.6rem; }
       .rec-item .rmain { flex: 1; min-width: 0; }
-      .rec-item .rlabel { font-size: 1.25rem; font-weight: 900; }
-      .kind-chip { margin-left: 0.4rem; border-radius: 999px; background: var(--exercise-soft); padding: 0.15rem 0.6rem; font-size: 0.85rem; font-weight: 900; color: var(--exercise); vertical-align: middle; }
-      .person-badge { margin-left: 0.4rem; border-radius: 999px; padding: 0.25rem 0.75rem; font-size: 1rem; font-weight: 900; vertical-align: middle; }
-      .person-badge.kengo { background: var(--blue); color: #fff; }
-      .person-badge.kana { background: var(--accent); color: var(--accent-ink); }
-      .rec-item .rkcal { font-size: 1.1rem; font-weight: 900; color: var(--meal); white-space: nowrap; font-family: "Orbitron", "Zen Maru Gothic", system-ui, sans-serif; }
-      .rec-item .rtime { font-size: 1.1rem; font-weight: 900; white-space: nowrap; font-family: "Orbitron", "Zen Maru Gothic", system-ui, sans-serif; }
-      .empty-box { margin-top: 1rem; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border); padding: 1.4rem 1rem; text-align: center; font-weight: 700; color: var(--dim); line-height: 1.7; }
-      .loading { margin-top: 1rem; color: var(--dim); font-weight: 700; }
+      .rec-item .rlabel { font-size: 1.15rem; font-weight: 800; }
+      .kind-chip { margin-left: 0.45rem; border-radius: 999px; background: var(--surface-3); padding: 0.15rem 0.6rem; font-size: 0.78rem; font-weight: 800; color: var(--text); vertical-align: middle; }
+      .person-badge { margin-left: 0.45rem; border-radius: 999px; padding: 0.2rem 0.7rem; font-size: 0.85rem; font-weight: 800; vertical-align: middle; background: var(--surface-3); color: var(--text); }
+      .rec-item .rkcal { font-size: 1.05rem; font-weight: 900; color: var(--c-meal); white-space: nowrap; font-variant-numeric: tabular-nums; }
+      .rec-item .rtime { font-size: 1rem; font-weight: 700; color: var(--dim); white-space: nowrap; font-variant-numeric: tabular-nums; }
+      .empty-box { margin-top: 1.25rem; padding: 1.5rem 0.25rem; font-weight: 700; color: var(--dim); line-height: 1.8; }
+      .loading { margin-top: 1.25rem; color: var(--dim); font-weight: 700; }
 
-      /* コレクション */
-      .collection { margin-top: 1.6rem; }
-      .collection h3 { margin: 0; font-size: 1.15rem; font-weight: 900; }
-      .collection h3 .count { font-size: 1rem; color: var(--accent); font-family: "Orbitron", "Zen Maru Gothic", system-ui, sans-serif; }
-      .collection ul { margin: 0.5rem 0 0; padding: 0; list-style: none; }
-      .collection li { margin-top: 0.5rem; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border); padding: 0.8rem 1rem; font-weight: 700; box-shadow: 0 2px 6px rgba(0,0,0,0.3); line-height: 1.6; }
-      .collection .none { margin-top: 0.5rem; font-weight: 700; color: var(--dim); }
+      /* 言葉のストック */
+      .stock-head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; }
+      .stock-head h2 { margin: 0; font-size: 1.7rem; font-weight: 900; letter-spacing: -0.01em; }
+      .stock-count { margin: 0; font-size: 1.1rem; font-weight: 900; color: var(--c-stock); font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .stock-count .of { color: var(--dim); font-weight: 800; }
+      .stock .segments { margin-top: 0.9rem; }
+      .stock ul { margin: 0.35rem 0 0; padding: 0; list-style: none; }
+      .stock li { margin-top: 0.6rem; border: 2px solid var(--line); border-radius: 12px; background: var(--surface); padding: 0.85rem 1rem; font-weight: 700; line-height: 1.65; font-size: 1rem; }
+      .stock .none { margin-top: 0.9rem; font-weight: 700; color: var(--dim); line-height: 1.8; }
 
-      /* シート（画面に重ねる入力パネル） */
-      .overlay { position: absolute; left: 0; width: 100%; z-index: 40; display: none; align-items: flex-start; justify-content: center; background: rgba(2,4,12,0.72); padding: 1rem 0.75rem; }
+      /* シート */
+      .overlay { position: absolute; left: 0; width: 100%; z-index: 40; display: none; align-items: flex-start; justify-content: center; background: rgba(0,0,0,0.65); padding: 1rem 0.75rem; }
       .overlay.show { display: flex; }
-      .sheet { width: 100%; max-width: 36rem; max-height: 92vh; overflow-y: auto; border-radius: 26px; background: var(--surface); border: 1px solid var(--border); padding: 1.25rem; }
-      .sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem; }
-      .sheet-head h2 { margin: 0; font-size: 1.5rem; font-weight: 900; }
-      .close-btn { display: flex; height: 2.75rem; width: 2.75rem; align-items: center; justify-content: center; border-radius: 999px; background: var(--surface-alt); font-size: 1.1rem; }
-      .field-label { margin: 1.2rem 0 0; font-size: 0.95rem; font-weight: 900; }
-      .photo-btn { display: flex; width: 100%; flex-direction: column; align-items: center; gap: 0.2rem; border: 2px dashed var(--meal); border-radius: var(--radius); background: var(--meal-soft); padding: 1.8rem 1rem; color: var(--meal); }
-      .photo-btn .icon { font-size: 2.4rem; }
-      .photo-btn .t1 { font-size: 1.15rem; font-weight: 900; }
-      .photo-btn .t2 { font-size: 0.8rem; font-weight: 700; }
+      .sheet { width: 100%; max-width: 40rem; max-height: 92vh; overflow-y: auto; border-radius: 20px; background: #1c1c21; border: 2px solid var(--line); box-shadow: 0 16px 48px rgba(0,0,0,0.6); padding: 1.5rem 1.25rem; }
+      .sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
+      .sheet-head h2 { margin: 0; font-size: 1.6rem; font-weight: 900; }
+      .close-btn { display: flex; height: 2.75rem; width: 2.75rem; align-items: center; justify-content: center; border-radius: 999px; background: var(--surface-3); font-size: 1.05rem; }
+      .field-label { margin: 1.4rem 0 0; font-size: 0.85rem; font-weight: 800; letter-spacing: 0.08em; color: var(--dim); }
+      .photo-btn { display: flex; width: 100%; flex-direction: column; align-items: center; gap: 0.25rem; border: 2px dashed #4a4a55; border-radius: var(--radius); background: var(--surface); padding: 1.8rem 1rem; }
+      .photo-btn .icon { font-size: 2.2rem; }
+      .photo-btn .t1 { font-size: 1.1rem; font-weight: 900; }
+      .photo-btn .t2 { font-size: 0.8rem; font-weight: 600; color: var(--dim); }
       .photo-preview { position: relative; }
-      .photo-preview img { width: 100%; max-height: 14rem; object-fit: cover; border-radius: var(--radius); display: block; }
-      .photo-preview button { position: absolute; bottom: 0.5rem; right: 0.5rem; border-radius: 999px; background: rgba(0,0,0,0.65); color: #fff; padding: 0.35rem 0.9rem; font-size: 0.9rem; min-height: 2.25rem; }
-      .preset-grid { margin-top: 0.5rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
-      .preset-grid button { border-radius: 14px; padding: 0.7rem 0.2rem; text-align: center; background: var(--surface-alt); }
-      .preset-grid button[aria-pressed="true"] { background: var(--meal); color: var(--accent-ink); font-weight: 900; }
-      .preset-grid .pl { display: block; font-size: 0.95rem; font-weight: 700; }
-      .preset-grid .pk { display: block; font-size: 0.75rem; opacity: 0.85; font-family: "Orbitron", "Zen Maru Gothic", system-ui, sans-serif; }
-      .kcal-adjust { margin-top: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 0.9rem; }
-      .kcal-adjust button { height: 2.9rem; width: 2.9rem; border-radius: 999px; background: var(--surface-alt); font-size: 1.4rem; }
-      .kcal-adjust .val { min-width: 8rem; text-align: center; font-size: 2rem; font-weight: 900; margin: 0; font-family: "Orbitron", "Zen Maru Gothic", system-ui, sans-serif; }
-      .kcal-adjust .val small { font-size: 1rem; font-weight: 700; }
-      .chip-row { margin-top: 0.5rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
-      .chip-row button { border-radius: 999px; padding: 0.5rem 1.1rem; background: var(--surface-alt); font-weight: 700; min-height: 2.75rem; }
-      .chip-row button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); font-weight: 900; }
+      .photo-preview img { width: 100%; max-height: 15rem; object-fit: cover; border-radius: var(--radius); display: block; }
+      .photo-preview button { position: absolute; bottom: 0.5rem; right: 0.5rem; border-radius: 999px; background: rgba(0,0,0,0.75); color: #fff; padding: 0.35rem 0.9rem; font-size: 0.9rem; font-weight: 800; min-height: 2.25rem; }
+      .estimate-box { margin-top: 0.9rem; border: 2px solid var(--line); border-radius: 12px; background: var(--accent-soft); padding: 0.9rem 1rem; }
+      .estimate-box .e-main { margin: 0; font-size: 1.05rem; font-weight: 900; color: var(--gold); line-height: 1.5; }
+      .estimate-box .e-sub { margin: 0.3rem 0 0; font-size: 0.85rem; font-weight: 600; color: var(--dim); line-height: 1.6; }
+      .estimate-status { margin-top: 0.9rem; font-size: 0.95rem; font-weight: 800; color: var(--dim); }
+      .cat-grid { margin-top: 0.6rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+      .cat-grid button { border-radius: 999px; padding: 0.55rem 1rem; background: var(--surface-3); font-weight: 800; font-size: 0.95rem; }
+      .cat-grid button[aria-pressed="true"] { background: #ffffff; color: #000000; }
+      .cat-grid button small { font-weight: 700; opacity: 0.75; font-variant-numeric: tabular-nums; }
+      .serv-row { margin-top: 0.6rem; display: flex; gap: 0.5rem; }
+      .serv-row button { flex: 1; border-radius: 12px; padding: 0.8rem 0.2rem; background: var(--surface-3); font-size: 1.1rem; font-weight: 900; }
+      .serv-row button[aria-pressed="true"] { background: #ffffff; color: #000000; }
+      .preset-grid { margin-top: 0.6rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
+      .preset-grid button { border-radius: 12px; padding: 0.7rem 0.2rem; text-align: center; background: var(--surface-3); }
+      .preset-grid button[aria-pressed="true"] { background: #ffffff; color: #000000; font-weight: 900; }
+      .preset-grid .pl { display: block; font-size: 0.95rem; font-weight: 800; }
+      .preset-grid .pk { display: block; font-size: 0.75rem; opacity: 0.8; font-variant-numeric: tabular-nums; }
+      .kcal-adjust { margin-top: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 1rem; }
+      .kcal-adjust button { height: 3rem; width: 3rem; border-radius: 999px; background: var(--surface-3); font-size: 1.5rem; font-weight: 900; }
+      .kcal-adjust .val { min-width: 9rem; text-align: center; font-size: 2.4rem; font-weight: 900; margin: 0; font-variant-numeric: tabular-nums; line-height: 1; }
+      .kcal-adjust .val small { font-size: 1rem; font-weight: 800; color: var(--dim); }
+      .kcal-total-note { margin: 0.5rem 0 0; text-align: center; font-size: 0.9rem; font-weight: 700; color: var(--dim); font-variant-numeric: tabular-nums; }
+      .chip-row { margin-top: 0.6rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+      .chip-row button { border-radius: 999px; padding: 0.5rem 1.1rem; background: var(--surface-3); font-weight: 800; min-height: 2.75rem; }
+      .chip-row button[aria-pressed="true"] { background: #ffffff; color: #000000; font-weight: 900; }
       .chip-row label { display: flex; align-items: center; gap: 0.3rem; font-size: 0.95rem; color: var(--dim); font-weight: 700; }
-      .num-input { border: 2px solid var(--border); border-radius: 12px; background: var(--surface-2); color: var(--text); padding: 0.5rem; text-align: right; font: inherit; font-weight: 900; }
+      .num-input { border: 2px solid var(--line); border-radius: 10px; background: var(--surface-2); color: var(--text); padding: 0.5rem; text-align: right; font: inherit; font-weight: 800; }
       .num-input.w20 { width: 5.2rem; }
       .num-input.w24 { width: 6.2rem; }
-      .text-input, .dt-input { width: 100%; border: 2px solid var(--border); border-radius: 12px; background: var(--surface-2); color: var(--text); padding: 0.6rem 0.8rem; font: inherit; margin-top: 0.3rem; }
-      .save-btn { margin-top: 1.5rem; width: 100%; border-radius: 999px; padding: 1rem; font-size: 1.15rem; font-weight: 900; }
-      .save-btn.accent { background: linear-gradient(180deg, #ffa02e, var(--accent-deep)); color: var(--accent-ink); }
-      .save-btn.meal { background: linear-gradient(180deg, #ffa02e, var(--accent-deep)); color: var(--accent-ink); }
-      .sheet-error { margin-top: 0.8rem; color: var(--danger); font-weight: 700; font-size: 0.95rem; }
+      .text-input, .dt-input { width: 100%; border: 2px solid var(--line); border-radius: 10px; background: var(--surface-2); color: var(--text); padding: 0.6rem 0.8rem; font: inherit; margin-top: 0.3rem; }
+      .save-btn { margin-top: 1.6rem; width: 100%; border-radius: 999px; padding: 1rem; font-size: 1.1rem; font-weight: 900; background: #ffffff; color: #000000; }
+      .sheet-error { margin-top: 0.8rem; color: var(--red); font-weight: 700; font-size: 0.95rem; }
       .type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
-      .type-grid button { border-radius: 14px; padding: 0.8rem 0.2rem; text-align: center; background: var(--surface-alt); }
-      .type-grid button[aria-checked="true"] { background: var(--blue); color: #fff; font-weight: 900; }
-      .type-grid .ti { display: block; font-size: 1.35rem; }
-      .type-grid .tl { display: block; font-size: 0.95rem; font-weight: 700; margin-top: 0.15rem; }
-      .delete-btn { margin-top: 0.8rem; width: 100%; border-radius: 999px; padding: 0.8rem; color: var(--danger); font-weight: 700; }
+      .type-grid button { border-radius: 12px; padding: 0.8rem 0.2rem; text-align: center; background: var(--surface-3); }
+      .type-grid button[aria-checked="true"] { background: #ffffff; color: #000000; font-weight: 900; }
+      .type-grid .ti { display: block; font-size: 1.3rem; }
+      .type-grid .tl { display: block; font-size: 0.95rem; font-weight: 800; margin-top: 0.15rem; }
+      .delete-btn { margin-top: 0.8rem; width: 100%; border-radius: 999px; padding: 0.8rem; color: var(--red); font-weight: 800; }
       .delete-confirm { margin-top: 0.8rem; display: flex; gap: 0.5rem; }
       .delete-confirm button { flex: 1; border-radius: 999px; padding: 0.8rem; font-weight: 900; }
-      .delete-confirm .yes { background: var(--danger); color: #fff; }
-      .delete-confirm .no { background: var(--surface-alt); }
+      .delete-confirm .yes { background: #d42a1e; color: #fff; }
+      .delete-confirm .no { background: var(--surface-3); }
+      .sheet-note { margin: 0.3rem 0 0; font-weight: 700; color: var(--dim); line-height: 1.7; }
 
-      /* 目標ピッカー */
       .goal-picker { margin-top: 1.4rem; }
-      .goal-picker .gp-label { margin: 0; font-size: 1.15rem; font-weight: 900; }
+      .goal-picker .gp-label { margin: 0; font-size: 1.05rem; font-weight: 900; }
       .goal-picker .gp-row { margin-top: 0.5rem; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
-      .goal-picker .gp-row button { border-radius: 999px; padding: 0.7rem 1.2rem; font-size: 1.1rem; font-weight: 900; background: var(--surface-alt); }
-      .goal-picker .gp-row button[aria-pressed="true"] { background: var(--blue); color: #fff; }
+      .goal-picker .gp-row button { border-radius: 999px; padding: 0.7rem 1.2rem; font-size: 1.05rem; font-weight: 900; background: var(--surface-3); }
+      .goal-picker .gp-row button[aria-pressed="true"] { background: #ffffff; color: #000000; }
       .goal-picker label { display: flex; align-items: center; gap: 0.3rem; font-weight: 700; color: var(--dim); }
       .who-grid { margin-top: 0.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
-      .who-grid button { border-radius: 999px; padding: 0.9rem 0.25rem; font-size: 1.3rem; font-weight: 900; background: var(--surface-alt); }
-      .who-grid button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
-      .skip-btn { margin-top: 0.5rem; width: 100%; border-radius: 999px; padding: 0.8rem; font-size: 1rem; font-weight: 900; color: var(--dim); text-decoration: underline; text-underline-offset: 3px; }
-      .sheet-note { margin: 0.3rem 0 0; font-weight: 700; color: var(--dim); line-height: 1.6; }
+      .who-grid button { border-radius: 999px; padding: 0.9rem 0.25rem; font-size: 1.25rem; font-weight: 900; background: var(--surface-3); }
+      .who-grid button[aria-pressed="true"] { background: #ffffff; color: #000000; }
+      .skip-btn { margin-top: 0.5rem; width: 100%; border-radius: 999px; padding: 0.8rem; font-size: 1rem; font-weight: 800; color: var(--dim); text-decoration: underline; text-underline-offset: 3px; }
 
-      /* ガチャご褒美（カプセル） */
-      .reward-card { width: 100%; max-width: 28rem; border-radius: 32px; border: 4px solid var(--border); background: var(--surface); padding: 1.6rem; text-align: center; box-shadow: 0 18px 40px rgba(0,0,0,0.5); overflow: hidden; }
-      .reward-card.word-phase { border-color: var(--gold); background: linear-gradient(180deg, #2e230a, #1c1503); }
-      .capsule { position: relative; margin: 0 auto; height: 7rem; width: 7rem; overflow: hidden; border-radius: 999px; border: 4px solid var(--surface-alt); box-shadow: 0 10px 24px rgba(0,0,0,0.45); }
-      .capsule .top { position: absolute; left: 0; right: 0; top: 0; height: 50%; background: linear-gradient(180deg, #ffa02e, var(--accent-deep)); }
-      .capsule .bottom { position: absolute; left: 0; right: 0; bottom: 0; height: 50%; background: #fdf6ec; }
-      .capsule .line { position: absolute; left: 0; right: 0; top: 50%; height: 6px; transform: translateY(-50%); background: rgba(0,0,0,0.15); }
-      .capsule .core { position: absolute; left: 50%; top: 50%; height: 2rem; width: 2rem; transform: translate(-50%,-50%); border-radius: 999px; border: 4px solid rgba(0,0,0,0.15); background: #fff; }
-      .open-stage { position: relative; padding: 1.5rem 0; }
-      .open-capsule { position: relative; margin: 0 auto; height: 7rem; width: 7rem; }
-      .open-capsule .ht { position: absolute; left: 0; right: 0; top: 0; height: 50%; border-radius: 7rem 7rem 0 0; background: linear-gradient(180deg, #ffa02e, var(--accent-deep)); box-shadow: 0 4px 10px rgba(0,0,0,0.35); }
-      .open-capsule .hb { position: absolute; left: 0; right: 0; bottom: 0; height: 50%; border-radius: 0 0 7rem 7rem; background: #fdf6ec; box-shadow: 0 4px 10px rgba(0,0,0,0.35); }
-      .burst { position: absolute; left: 50%; top: 2.5rem; height: 7rem; width: 7rem; transform: translateX(-50%); border-radius: 999px; border: 8px solid var(--gold); }
-      .sparkle { position: absolute; font-size: 1.9rem; }
-      .reward-title { margin: 1.2rem 0 0; font-size: 1.9rem; font-weight: 900; }
-      .reward-sub { margin: 0.3rem 0 0; font-size: 1.1rem; font-weight: 900; color: var(--dim); }
-      .word-head { margin: 0; font-size: 1.5rem; font-weight: 900; color: var(--accent); }
-      .confetti { margin: 0.3rem 0 0; font-size: 1.5rem; letter-spacing: 0.3em; }
-      .levelup-chip { display: inline-block; margin-top: 0.8rem; border-radius: 999px; background: linear-gradient(180deg, #ffa02e, var(--accent-deep)); padding: 0.5rem 1.3rem; font-size: 1.25rem; font-weight: 900; color: var(--accent-ink); }
-      .word-box { margin-top: 1.2rem; border-radius: 24px; background: var(--surface); padding: 1.5rem 1.2rem; }
-      .word-box p { margin: 0; font-size: 2rem; font-weight: 900; line-height: 1.55; }
-      .word-note { margin: 0.8rem 0 0; font-size: 1rem; font-weight: 900; color: var(--dim); }
-      .yay-btn { margin-top: 1.3rem; width: 100%; border-radius: 999px; background: linear-gradient(180deg, #ffa02e, var(--accent-deep)); padding: 1rem; font-size: 1.5rem; font-weight: 900; color: var(--accent-ink); box-shadow: 0 6px 16px rgba(255,140,26,0.35); }
+      /* ガチャご褒美 */
+      .reward-card { width: 100%; max-width: 28rem; border-radius: 20px; background: #1c1c21; border: 2px solid var(--line); box-shadow: 0 16px 48px rgba(0,0,0,0.6); padding: 2rem 1.5rem; text-align: center; overflow: hidden; }
+      .reward-card.word-phase { border-color: var(--c-capsule); }
+      .capsule { position: relative; margin: 0 auto; height: 6.5rem; width: 6.5rem; overflow: hidden; border-radius: 999px; }
+      .capsule .top { position: absolute; left: 0; right: 0; top: 0; height: 50%; background: var(--c-capsule); }
+      .capsule .bottom { position: absolute; left: 0; right: 0; bottom: 0; height: 50%; background: #3a3a44; }
+      .capsule .line { position: absolute; left: 0; right: 0; top: 50%; height: 5px; transform: translateY(-50%); background: rgba(0,0,0,0.35); }
+      .capsule .core { position: absolute; left: 50%; top: 50%; height: 1.8rem; width: 1.8rem; transform: translate(-50%,-50%); border-radius: 999px; background: #fff; }
+      .open-stage { position: relative; padding: 1.25rem 0; }
+      .open-capsule { position: relative; margin: 0 auto; height: 6.5rem; width: 6.5rem; }
+      .open-capsule .ht { position: absolute; left: 0; right: 0; top: 0; height: 50%; border-radius: 7rem 7rem 0 0; background: var(--c-capsule); }
+      .open-capsule .hb { position: absolute; left: 0; right: 0; bottom: 0; height: 50%; border-radius: 0 0 7rem 7rem; background: #3a3a44; }
+      .burst { position: absolute; left: 50%; top: 2.2rem; height: 6.5rem; width: 6.5rem; transform: translateX(-50%); border-radius: 999px; border: 6px solid var(--c-capsule); }
+      .sparkle { position: absolute; font-size: 1.7rem; }
+      .reward-title { margin: 1.1rem 0 0; font-size: 1.7rem; font-weight: 900; }
+      .reward-sub { margin: 0.3rem 0 0; font-size: 1rem; font-weight: 700; color: var(--dim); }
+      .word-head { margin: 0; font-size: 1.3rem; font-weight: 900; color: var(--c-goal); letter-spacing: 0.04em; }
+      .levelup-chip { display: inline-block; margin-top: 0.9rem; border-radius: 999px; background: var(--c-goal); padding: 0.5rem 1.3rem; font-size: 1.15rem; font-weight: 900; color: #241a00; }
+      .word-box { margin-top: 1.4rem; padding: 0.5rem 0.25rem; }
+      .word-box p { margin: 0; font-size: 1.65rem; font-weight: 900; line-height: 1.6; }
+      .word-note { margin: 1rem 0 0; font-size: 0.9rem; font-weight: 700; color: var(--dim); }
+      .yay-btn { margin-top: 1.4rem; width: 100%; border-radius: 999px; background: #ffffff; padding: 1rem; font-size: 1.3rem; font-weight: 900; color: #000000; }
 
       @keyframes capsule-shake {
         0%, 100% { transform: rotate(-8deg) translateY(0); }
@@ -270,7 +273,6 @@
       @keyframes half-bottom { from { transform: translateY(0) rotate(0deg); opacity: 1; } to { transform: translateY(40px) rotate(16deg); opacity: 0.9; } }
       @keyframes sparkle-pop { 0% { transform: scale(0) rotate(0deg); opacity: 0; } 55% { transform: scale(1.35) rotate(40deg); opacity: 1; } 100% { transform: scale(1) rotate(70deg); opacity: 0.95; } }
       @keyframes burst-ring { from { transform: scale(0.35); opacity: 0.9; } to { transform: scale(1.9); opacity: 0; } }
-      @keyframes glow-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,159,28,0); } 50% { box-shadow: 0 0 42px 6px rgba(255,159,28,0.5); } }
       @keyframes float-up { 0% { transform: translateY(10px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
       .anim-capsule { animation: capsule-shake 0.16s ease-in-out 4; }
       .anim-pop { animation: pop-in 0.3s ease-out; }
@@ -278,118 +280,128 @@
       .anim-half-bottom { animation: half-bottom 0.45s ease-out forwards; }
       .anim-sparkle { animation: sparkle-pop 0.55s ease-out both; }
       .anim-burst { animation: burst-ring 0.55s ease-out forwards; }
-      .anim-glow { animation: glow-pulse 0.9s ease-in-out 2; }
       .anim-float-up { animation: float-up 0.3s ease-out both; }
       @media (prefers-reduced-motion: reduce) {
         .anim-capsule, .anim-pop, .anim-half-top, .anim-half-bottom,
-        .anim-sparkle, .anim-burst, .anim-glow, .anim-float-up { animation: none; }
+        .anim-sparkle, .anim-burst, .anim-float-up { animation: none; }
       }
+
     </style>
   </head>
   <body>
     <div class="wrap" id="wrap">
-      <h1 class="title font-display">モンテガチャログ</h1>
-      <div class="dballs" aria-hidden="true">
-        <span class="dball s1">★</span><span class="dball s2">★★</span><span class="dball s3">★★★</span><span class="dball s4">★★★★</span><span class="dball s5">★★★★★</span><span class="dball s6">★★★★★★</span><span class="dball s7">★★★★★★★</span>
-      </div>
-      <p class="tagline font-display">毎日の記録で <b>戦闘力</b> を上げよう！</p>
+      <h1 class="app-title">記録</h1>
 
-      <div class="person-tabs font-display" role="tablist" aria-label="記録する人" id="person-tabs"></div>
+      <div class="person-tabs" role="tablist" aria-label="記録する人" id="person-tabs"></div>
 
       <div class="net-error" id="net-error" role="alert">
         通信できませんでした。<button type="button" id="retry-btn">もう一度読み込む</button>
       </div>
       <div class="toast" id="toast" role="status"></div>
 
-      <!-- 今日のミッション -->
-      <section class="card" aria-label="今日のミニマム目標">
-        <div id="missing-area"></div>
-        <div class="mission-head">
-          <h2 class="font-display">今日のミッション</h2>
-          <button type="button" class="goal-btn" id="open-goals">⚙ 目標を変更</button>
-        </div>
-        <div class="goal-row">
-          <div class="ring-wrap" id="exercise-ring" role="img" aria-label="運動の進み具合"></div>
-          <p class="name font-display">🏃 運動</p>
-          <p class="status font-display" id="exercise-status"></p>
-        </div>
-        <div style="margin-top:1.4rem">
-          <div class="goal-row" style="margin-top:0">
-            <p class="name font-display">🍚 食事</p>
-            <p class="status font-display" id="meal-status"></p>
+      <!-- ヒーロー：達成日数と連続日数 -->
+      <section class="hero card card-hero" aria-label="達成状況">
+        <div class="hero-top">
+          <div>
+            <p class="hero-label">達成した日数</p>
+            <p class="hero-level"><span id="level-num">0</span><small> 日</small></p>
           </div>
-          <div class="meter" role="progressbar" id="meal-meter" aria-label="食事カロリーの進み具合">
-            <div id="meal-meter-fill"></div>
+          <div class="hero-streak">
+            <p class="num" id="streak-num">0</p>
+            <p class="cap">日連続</p>
           </div>
-          <p class="meter-label" id="meal-meter-label"></p>
         </div>
+        <p class="hero-msg" id="reward-msg"></p>
+        <p class="hero-sub" id="reward-sub"></p>
+        <p class="hero-sub" id="start-label"></p>
       </section>
 
-      <!-- 記録ボタン6つ -->
-      <section class="btn-grid" aria-label="記録する">
-        <button type="button" class="big-btn poop" data-quick="poop">
-          <span class="icon" aria-hidden="true">💩</span>
-          <span class="label font-display">うんち</span>
-          <span class="sub">タップで記録</span>
-        </button>
-        <button type="button" class="big-btn meal" id="open-meal" aria-label="食事を記録（カメラが起動します）">
-          <span class="icon" aria-hidden="true">📷</span>
-          <span class="label font-display">食事</span>
-          <span class="sub">写真を撮って記録</span>
-        </button>
-        <button type="button" class="big-btn exercise" data-quick="kintore">
-          <span class="icon" aria-hidden="true">🏋️</span>
-          <span class="label font-display">筋トレ</span>
-          <span class="sub">タップで記録</span>
-        </button>
-        <button type="button" class="big-btn exercise" data-quick="sanpo">
-          <span class="icon" aria-hidden="true">🚶</span>
-          <span class="label font-display">散歩</span>
-          <span class="sub">タップで記録</span>
-        </button>
-        <button type="button" class="big-btn exercise" data-quick="run">
-          <span class="icon" aria-hidden="true">🏃</span>
-          <span class="label font-display">ラン</span>
-          <span class="sub">タップで記録</span>
-        </button>
-        <button type="button" class="big-btn exercise" data-quick="sports">
-          <span class="icon" aria-hidden="true">⚽</span>
-          <span class="label font-display">スポーツ</span>
-          <span class="sub">タップで記録</span>
-        </button>
-      </section>
-      <p class="grid-note">筋トレ・散歩・ラン・スポーツは、全部「運動」として数えます</p>
-
-      <button type="button" class="backfill-btn" id="open-backfill">＋ あとから追加（過去の記録）</button>
-
-      <!-- ご褒美エリア -->
-      <section class="reward-area" aria-label="レベルと達成状況">
-        <div class="row">
-          <p class="lv font-display" id="level-label">🎮 Lv.1</p>
-          <p class="streak font-display" id="streak-label">🔥 0日連続</p>
+      <!-- 今日の状態 -->
+      <section class="card" style="margin-top:1.25rem" aria-label="今日のミッション">
+        <div class="today-head">
+          <h2>今日</h2>
+          <button type="button" class="goal-btn" id="open-goals">目標を変更</button>
         </div>
-        <p class="frac font-display" id="frac-label">📅 0/0日達成</p>
-        <p class="msg font-display" id="reward-msg"></p>
-        <p class="sub" id="reward-sub"></p>
-        <p class="sub" id="start-label"></p>
+        <div id="clear-area"></div>
+        <div class="stat-block ex">
+          <div class="stat-row">
+            <p class="stat-name"><span aria-hidden="true">🏋️</span> 運動</p>
+            <p class="stat-frac" id="exercise-frac"></p>
+          </div>
+          <div class="segments ex" id="exercise-segments" role="img" aria-label="運動の進み具合"></div>
+          <p class="stat-note" id="exercise-note"></p>
+          <p class="wc-cap">直近7日</p>
+          <div class="week-chart ex" id="exercise-week" role="img" aria-label="直近7日の運動回数"></div>
+        </div>
+        <div class="stat-block meal">
+          <div class="stat-row">
+            <p class="stat-name"><span aria-hidden="true">🍚</span> 食事</p>
+            <p class="stat-frac" id="meal-frac"></p>
+          </div>
+          <div class="segments meal" id="meal-segments" role="img" aria-label="食事カロリーの進み具合"></div>
+          <p class="stat-note" id="meal-note"></p>
+          <p class="wc-cap">直近7日</p>
+          <div class="week-chart meal" id="meal-week" role="img" aria-label="直近7日の食事カロリー"></div>
+        </div>
         <div class="milestone">
-          <p class="m-label font-display" id="milestone-label"></p>
-          <div class="meter" role="progressbar" id="milestone-meter" aria-label="通算100日達成までの進み具合">
-            <div id="milestone-fill"></div>
-          </div>
+          <p class="stat-name"><span aria-hidden="true">🏆</span> 通算100日達成まで</p>
+          <p class="m-frac" id="milestone-frac"></p>
+          <div class="segments goal" id="milestone-segments" role="img" aria-label="通算100日達成までの進み具合"></div>
           <p class="m-note" id="milestone-note"></p>
         </div>
       </section>
 
+      <!-- 記録ボタン -->
+      <section class="card" style="margin-top:1.25rem" aria-label="記録する">
+      <h2 class="record-head">記録する</h2>
+      <div class="btn-grid">
+        <button type="button" class="big-btn meal" id="open-meal" aria-label="食事を記録（カメラが起動します）">
+          <span class="icon" aria-hidden="true">📷</span>
+          <span><span class="label">食事</span><span class="sub">写真からカロリーを自動推定</span></span>
+        </button>
+        <button type="button" class="big-btn" data-quick="kintore">
+          <span class="icon" aria-hidden="true">🏋️</span>
+          <span class="label">筋トレ</span>
+        </button>
+        <button type="button" class="big-btn" data-quick="sanpo">
+          <span class="icon" aria-hidden="true">🚶</span>
+          <span class="label">散歩</span>
+        </button>
+        <button type="button" class="big-btn" data-quick="run">
+          <span class="icon" aria-hidden="true">🏃</span>
+          <span class="label">ラン</span>
+        </button>
+        <button type="button" class="big-btn" data-quick="sports">
+          <span class="icon" aria-hidden="true">⚽</span>
+          <span class="label">スポーツ</span>
+        </button>
+        <button type="button" class="big-btn" data-quick="poop">
+          <span class="icon" aria-hidden="true">💩</span>
+          <span class="label">うんち</span>
+        </button>
+      </div>
+      <p class="grid-note">筋トレ・散歩・ラン・スポーツは、全部「運動」として数えます</p>
+      <button type="button" class="backfill-btn" id="open-backfill">＋ あとから追加（過去の記録）</button>
+      </section>
+
       <!-- 記録リスト -->
-      <section aria-label="記録">
-        <div class="view-tabs font-display" role="tablist" aria-label="表示する記録">
+      <section class="card" style="margin-top:1.25rem" aria-label="記録">
+        <div class="view-tabs" role="tablist" aria-label="表示する記録">
           <button type="button" role="tab" id="tab-today" aria-selected="true">今日の記録</button>
           <button type="button" role="tab" id="tab-history" aria-selected="false">履歴</button>
         </div>
         <p class="loading" id="loading">読み込んでいます…</p>
         <div id="lists"></div>
-        <div class="collection" id="collection" style="display:none"></div>
+      </section>
+
+      <!-- 言葉のストック（集めた言葉の一覧） -->
+      <section class="card stock card-stock" style="margin-top:1.25rem" aria-label="言葉のストック">
+        <div class="stock-head">
+          <h2><span aria-hidden="true">📚</span> 言葉のストック</h2>
+          <p class="stock-count" id="stock-count"></p>
+        </div>
+        <div class="segments" id="stock-segments" role="img" aria-label="言葉の集まり具合"></div>
+        <div id="stock-body"></div>
       </section>
     </div>
 
@@ -398,28 +410,45 @@
       <!-- 食事シート -->
       <div class="sheet" id="sheet-meal" style="display:none">
         <div class="sheet-head">
-          <h2 class="font-display" id="meal-title">食事</h2>
+          <h2 id="meal-title">食事</h2>
           <button type="button" class="close-btn" data-close aria-label="閉じる">✕</button>
         </div>
         <input type="file" id="meal-file" accept="image/*" capture="environment" hidden aria-label="食事の写真を撮る" />
         <div id="meal-photo-empty">
           <button type="button" class="photo-btn" id="meal-photo-btn">
             <span class="icon" aria-hidden="true">📷</span>
-            <span class="t1 font-display">カメラで写真を撮る</span>
-            <span class="t2">タップでカメラが起動します（写真はこの端末の中だけ）</span>
+            <span class="t1">カメラで写真を撮る</span>
+            <span class="t2">撮ると、その場でカロリーを自動推定します（写真は端末の外に出ません）</span>
           </button>
         </div>
         <div class="photo-preview" id="meal-photo-preview" style="display:none">
           <img id="meal-photo-img" alt="撮影した食事の写真" />
           <button type="button" id="meal-retake">撮り直す</button>
         </div>
-        <p class="field-label">推定カロリー（目安でOK、そのまま保存できます）</p>
+        <p class="estimate-status" id="meal-est-status" style="display:none"></p>
+        <div class="estimate-box" id="meal-estimate" style="display:none">
+          <p class="e-main" id="meal-estimate-main"></p>
+          <p class="e-sub" id="meal-estimate-sub"></p>
+        </div>
+        <div id="meal-cat-wrap" style="display:none">
+          <p class="field-label">料理の種類から選ぶ（タップでカロリーが入ります）</p>
+          <div class="cat-grid" id="meal-cats"></div>
+        </div>
+        <p class="field-label">何人分？（大皿は人数で割って1人分にします）</p>
+        <div class="serv-row" id="meal-servings" role="group" aria-label="何人分か選ぶ">
+          <button type="button" data-serv="1" aria-pressed="true">1人分</button>
+          <button type="button" data-serv="2" aria-pressed="false">2人分</button>
+          <button type="button" data-serv="3" aria-pressed="false">3人分</button>
+          <button type="button" data-serv="4" aria-pressed="false">4人分</button>
+        </div>
+        <p class="field-label">1人あたりのカロリー（目安・手で直せます）</p>
         <div class="preset-grid" id="meal-presets"></div>
         <div class="kcal-adjust">
           <button type="button" id="meal-minus" aria-label="カロリーを50減らす">−</button>
-          <p class="val font-display"><span id="meal-kcal-val">650</span><small> kcal</small></p>
+          <p class="val"><span id="meal-kcal-val">650</span><small> kcal</small></p>
           <button type="button" id="meal-plus" aria-label="カロリーを50増やす">＋</button>
         </div>
+        <p class="kcal-total-note" id="meal-total-note"></p>
         <p class="field-label">間食（あれば）</p>
         <div class="chip-row" id="snack-row">
           <button type="button" data-snack="0" aria-pressed="true">なし</button>
@@ -432,13 +461,13 @@
           </label>
         </div>
         <p class="sheet-error" id="meal-error" style="display:none"></p>
-        <button type="button" class="save-btn meal font-display" id="meal-save">保存する</button>
+        <button type="button" class="save-btn" id="meal-save">保存する</button>
       </div>
 
       <!-- あとから追加シート -->
       <div class="sheet" id="sheet-backfill" style="display:none">
         <div class="sheet-head">
-          <h2 class="font-display" id="backfill-title">記録を追加</h2>
+          <h2 id="backfill-title">記録を追加</h2>
           <button type="button" class="close-btn" data-close aria-label="閉じる">✕</button>
         </div>
         <div class="type-grid" role="radiogroup" aria-label="記録の種類" id="backfill-types"></div>
@@ -457,13 +486,13 @@
           </div>
         </div>
         <p class="sheet-error" id="backfill-error" style="display:none"></p>
-        <button type="button" class="save-btn accent font-display" id="backfill-save">追加する</button>
+        <button type="button" class="save-btn" id="backfill-save">追加する</button>
       </div>
 
       <!-- 編集シート -->
       <div class="sheet" id="sheet-edit" style="display:none">
         <div class="sheet-head">
-          <h2 class="font-display" id="edit-title">記録</h2>
+          <h2 id="edit-title">記録</h2>
           <button type="button" class="close-btn" data-close aria-label="閉じる">✕</button>
         </div>
         <p class="sheet-note" id="edit-owner"></p>
@@ -478,12 +507,12 @@
           <div class="preset-grid" id="edit-presets"></div>
           <div class="kcal-adjust">
             <button type="button" id="edit-minus" aria-label="カロリーを50減らす">−</button>
-            <p class="val font-display"><span id="edit-kcal-val">0</span><small> kcal</small></p>
+            <p class="val"><span id="edit-kcal-val">0</span><small> kcal</small></p>
             <button type="button" id="edit-plus" aria-label="カロリーを50増やす">＋</button>
           </div>
         </div>
         <p class="sheet-error" id="edit-error" style="display:none"></p>
-        <button type="button" class="save-btn accent font-display" id="edit-save">変更を保存</button>
+        <button type="button" class="save-btn" id="edit-save">変更を保存</button>
         <button type="button" class="delete-btn" id="edit-delete">この記録を削除</button>
         <div class="delete-confirm" id="edit-delete-confirm" style="display:none">
           <button type="button" class="yes" id="edit-delete-yes">本当に削除する</button>
@@ -494,24 +523,24 @@
       <!-- 目標シート -->
       <div class="sheet" id="sheet-goals" style="display:none">
         <div class="sheet-head">
-          <h2 class="font-display" id="goals-title">ミニマム目標</h2>
+          <h2 id="goals-title">ミニマム目標</h2>
           <button type="button" class="close-btn" data-close aria-label="閉じる">✕</button>
         </div>
         <p class="sheet-note" id="goals-note"></p>
         <div id="goals-fields"></div>
         <p class="sheet-error" id="goals-error" style="display:none"></p>
-        <button type="button" class="save-btn accent font-display" id="goals-save">保存する</button>
+        <button type="button" class="save-btn" id="goals-save">保存する</button>
       </div>
 
       <!-- 初期設定 -->
       <div class="sheet" id="sheet-onboard" style="display:none">
-        <h2 class="font-display" style="margin:0;font-size:1.5rem;font-weight:900">ようこそ！モンテガチャログ</h2>
+        <h2 style="margin:0;font-size:1.6rem;font-weight:900">ようこそ！記録</h2>
         <p class="sheet-note">最初に、この端末を使う人と、あなたのミニマム目標を決めてください（あとでいつでも変えられます）。</p>
-        <p class="field-label font-display" style="font-size:1.15rem">あなたはどっち？</p>
-        <div class="who-grid font-display" id="onboard-who"></div>
+        <p class="field-label" style="font-size:1.05rem">あなたはどっち？</p>
+        <div class="who-grid" id="onboard-who"></div>
         <div id="onboard-fields"></div>
         <p class="sheet-error" id="onboard-error" style="display:none"></p>
-        <button type="button" class="save-btn accent font-display" id="onboard-save" style="font-size:1.3rem">これで始める</button>
+        <button type="button" class="save-btn" id="onboard-save" style="font-size:1.25rem">これで始める</button>
         <button type="button" class="skip-btn" id="onboard-skip">あとで決める（目安のままで始める）</button>
       </div>
     </div>
@@ -523,7 +552,7 @@
           <div class="capsule anim-capsule" aria-hidden="true">
             <div class="top"></div><div class="bottom"></div><div class="line"></div><div class="core"></div>
           </div>
-          <p class="reward-title font-display">記録できました！</p>
+          <p class="reward-title">記録できました！</p>
           <p class="reward-sub">ガチャが回っています…</p>
         </div>
         <div id="reward-phase-open" style="display:none">
@@ -537,18 +566,17 @@
               <span class="sparkle anim-sparkle" style="left:50%;top:1.8rem;transform:translateX(-50%);animation-delay:0.15s">💫</span>
             </div>
           </div>
-          <p class="reward-title font-display" style="color:var(--gold)">ポンッ！</p>
+          <p class="reward-title" style="color:var(--accent)">ポンッ！</p>
         </div>
         <div id="reward-phase-word" style="display:none">
           <div class="anim-pop" style="position:relative">
-            <p class="word-head font-display">🎉 やった！言葉ゲット！</p>
-            <p class="confetti anim-float-up" aria-hidden="true">🎊🟡🔴🔵🟢🎊</p>
+            <p class="word-head">名言ゲット！</p>
             <div id="levelup-slot"></div>
-            <div class="word-box anim-glow">
-              <p class="font-display" id="reward-word"></p>
+            <div class="word-box">
+              <p id="reward-word"></p>
             </div>
-            <p class="word-note">モンテッソーリの言葉 ・ コレクションに保存しました</p>
-            <button type="button" class="yay-btn font-display" id="reward-close">やった！</button>
+            <p class="word-note">名言 ・ コレクションに保存しました</p>
+            <button type="button" class="yay-btn" id="reward-close">やった！</button>
           </div>
         </div>
       </div>
@@ -613,30 +641,103 @@
       ];
       var DEFAULT_PROFILE = { exercise_goal: 3, calorie_limit: 2000 };
 
-      /* モンテッソーリの言葉（レベルで深くなる3 tiers） */
+      /* 名言プール（鼓舞系中心に厳選・達成日数で広がる3 tiers） */
       var WORD_TIERS = [
         [
-          "「自分でするのを、手伝ってください」――子どもの心の声です",
-          "遊びは、子どもの仕事です",
-          "手が動くとき、心も育ちます",
-          "集中している子どもは、深く幸せの中にいます",
-          "できると思っていることは、手伝わないでください",
-          "子どもは、環境の中で自分をつくり上げていきます",
+          "「諦めたらそこで試合終了ですよ」――安西先生（『SLAM DUNK』）",
+          "「心を燃やせ」――煉獄杏寿郎（『鬼滅の刃』）",
+          "「海賊王に、俺はなる！」――モンキー・D・ルフィ（『ONE PIECE』）",
+          "「つまづいたっていいじゃないか　にんげんだもの」――相田みつを",
+          "「小さなことを積み重ねることが、とんでもないところへ行く、ただひとつの道だと思います」――イチロー",
+          "「努力は必ず報われる。報われない努力があるとすれば、それはまだ努力とは呼べない」――王貞治",
+          "「希望はいいものだ。たぶん最高のものだ。そして、いいものは決して滅びない」――アンディ・デュフレーン（『ショーシャンクの空に』）",
+          "「大事なのは、どれだけ強く打てるかじゃない。どれだけ打たれても、前に進み続けられるかだ」――ロッキー・バルボア（『ロッキー・ザ・ファイナル』）",
+          "「雨にも負けず、風にも負けず、雪にも夏の暑さにも負けぬ、丈夫な体を持ち」――宮沢賢治（『雨ニモマケズ』）",
+          "「なせば成る。なさねば成らぬ、何事も。成らぬは人の、なさぬなりけり」――上杉鷹山",
+          "「立つんだ、ジョー！」――丹下段平（『あしたのジョー』）",
+          "「私が来た!!」――オールマイト（『僕のヒーローアカデミア』）",
+          "「仲間を大切にしない奴は、それ以上のクズだ」――はたけカカシ（『NARUTO』）",
+          "「しあわせは　いつも　じぶんの　こころが　きめる」――相田みつを",
+          "「何も咲かない寒い日は、下へ下へと根を伸ばせ。やがて大きな花が咲く」――高橋尚子",
+          "「憧れるのをやめましょう。憧れてしまっては、超えることはできない」――大谷翔平",
+          "「チャレンジして失敗を恐れるよりも、何もしないことを恐れろ」――本田宗一郎",
+          "「夢なき者に理想なし、理想なき者に計画なし、計画なき者に実行なし、実行なき者に成功なし」――吉田松陰",
+          "「元気があれば、何でもできる！」――アントニオ猪木",
+          "「やってみなはれ。やらな分からん」――鳥井信治郎",
+          "「人間は、殺されることはあっても、負けるようにはできていない」――サンティアゴ（『老人と海』）",
+          "「僕の前に道はない。僕の後ろに道は出来る」――高村光太郎（『道程』）",
+          "「成し遂げるまでは、いつも不可能に見える」――ネルソン・マンデラ",
+          "「すぐやる、必ずやる、できるまでやる」――永守重信",
+          "「夢は逃げない。逃げるのはいつも自分だ」――星野仙一",
+          "「生きろ、そなたは美しい」――アシタカ（『もののけ姫』）",
+          "「明日は明日の風が吹く」――スカーレット・オハラ（『風と共に去りぬ』）",
+          "「イエス・ウィ・キャン（私たちにはできる）」――バラク・オバマ",
+          "「顔を太陽に向けていれば、影を見ることはない」――ヘレン・ケラー",
+          "「一生勉強　一生青春」――相田みつを",
         ],
         [
-          "平和をつくることは、教育の仕事です",
-          "子どもの可能性を解き放てば、世界が変わります",
-          "興味に満ちた環境が、子どもを活動へ招きます",
-          "待つことは、信じることです",
-          "子どもの歩く速さに合わせることが、教育の第一歩です",
-          "秩序は、幼い心の安心です",
+          "「安西先生…!! バスケがしたいです……」――三井寿（『SLAM DUNK』）",
+          "「背中の傷は剣士の恥だ」――ロロノア・ゾロ（『ONE PIECE』）",
+          "「ワンピースは実在する！」――白ひげ（『ONE PIECE』）",
+          "「生きたい…!!」――ニコ・ロビン（『ONE PIECE』）",
+          "「生殺与奪の権を他人に握らせるな!!」――冨岡義勇（『鬼滅の刃』）",
+          "「痛みを伴わない教訓には、意義がない」――エドワード・エルリック（『鋼の錬金術師』）",
+          "「人間讃歌は『勇気』の讃歌ッ!!」――ウィル・A・ツェペリ（『ジョジョの奇妙な冒険』）",
+          "「まっすぐ自分の言葉は曲げねェ。それがオレの忍道だ」――うずまきナルト（『NARUTO』）",
+          "「心臓を捧げよ！」――エルヴィン・スミス（『進撃の巨人』）",
+          "「駆逐してやる!!」――エレン・イェーガー（『進撃の巨人』）",
+          "「私は失敗したことがない。ただ、1万通りの、うまくいかない方法を見つけただけだ」――トーマス・エジソン",
+          "「私はこれまで9,000回以上もシュートを外してきた。何度も何度も失敗してきた。だからこそ、成功したんだ」――マイケル・ジョーダン",
+          "「天才とは、1％のひらめきと99％の努力である」――トーマス・エジソン",
+          "「自分ができると思えばできる、できないと思えばできない。どちらにしても、あなたが正しい」――ヘンリー・フォード",
+          "「未来は、自分の夢の美しさを信じる人のものである」――エレノア・ローズベルト",
+          "「私を殺さないものは、私をより強くする」――フリードリヒ・ニーチェ",
+          "「考え方×熱意×能力。この三つのかけ算で、人生と仕事の結果は決まる」――稲盛和夫",
+          "「人生はチョコレートの箱のようなもの。開けてみるまで、中身は分からない」――フォレスト・ガンプ（『フォレスト・ガンプ』）",
+          "「フォースと共にあらんことを」――オビ＝ワン・ケノービ（『スター・ウォーズ』）",
+          "「事件は会議室で起きてるんじゃない、現場で起きてるんだ」――青島俊作（『踊る大捜査線 THE MOVIE』）",
+          "「落ち込むこともあるけれど、私、この町が好きです」――キキ（『魔女の宅急便』）",
+          "「やれなかった　やらなかった　どっちかな」――相田みつを",
+          "「雨の日には　雨の中を　風の日には　風の中を」――相田みつを",
+          "「美しいものを　美しいと思える　あなたのこころが　美しい」――相田みつを",
+          "「天は人の上に人を造らず、人の下に人を造らず」――福沢諭吉（『学問のすゝめ』）",
+          "「千日の稽古をもって鍛とし、万日の稽古をもって錬とする」――宮本武蔵（『五輪書』）",
+          "「世の人は我を何とも言わば言え、我が成すことは我のみぞ知る」――坂本龍馬",
+          "「人の一生は、重荷を負うて遠き道を行くがごとし。急ぐべからず」――徳川家康",
+          "「戦う君の唄を、戦わない奴らが笑うだろう」――中島みゆき（『ファイト！』）",
+          "「生きてるだけで、丸儲け」――明石家さんま",
         ],
         [
-          "繰り返しは、子どもが自分を育てる方法です",
-          "大人の仕事は、子どもの邪魔をしないことです",
-          "観察こそが、子育ての出発点です",
-          "環境を整えることが、大人にできる最大の援助です",
-          "子どもの「できた！」の瞬間を、奪わないでください",
+          "「まったく!!! いい人生だった!!!!」――Dr.ヒルルク（『ONE PIECE』）",
+          "「おれは助けてもらわねェと、生きていけない自信がある!!!」――モンキー・D・ルフィ（『ONE PIECE』）",
+          "「燃えたよ…真っ白に燃え尽きた…」――矢吹丈（『あしたのジョー』）",
+          "「我が生涯に一片の悔いなし!!」――ラオウ（『北斗の拳』）",
+          "「この世界は残酷だ…そして、とても美しい」――ミカサ・アッカーマン（『進撃の巨人』）",
+          "「何も捨てることができない人には、何も変えることはできない」――アルミン・アルレルト（『進撃の巨人』）",
+          "「失っても、失っても、生きていくしかないんです」――竈門炭治郎（『鬼滅の刃』）",
+          "「立て、歩け、前へ進め。あんたには立派な足があるじゃないか」――エドワード・エルリック（『鋼の錬金術師』）",
+          "「何かを得るには、同等の代価が必要だ」――等価交換の原則（『鋼の錬金術師』）",
+          "「お前に敵などいない。誰にも、敵などいないのだ」――トールズ（『ヴィンランド・サガ』）",
+          "「道草を楽しめ、大いにな。ほしいものより大切なものが、きっとそっちに転がってる」――ジン・フリクス（『HUNTER×HUNTER』）",
+          "「退かぬ！ 媚びぬ！ 省みぬ！」――サウザー（『北斗の拳』）",
+          "「許せサスケ、また今度だ」――うちはイタチ（『NARUTO』）",
+          "「俺は天下の大将軍になる」――信（『キングダム』）",
+          "「ただいるだけで　あなたがそこに　ただいるだけで　その場の空気が　あかるくなる　そんなあなたに　私はなりたい」――相田みつを",
+          "「そのときの　出逢いが　人生を根底から　変えることがある　よき出逢いを」――相田みつを",
+          "「将来をあらかじめ見据えて、点と点をつなぐことはできない。できるのは、後から振り返ってつなぐことだけだ」――スティーブ・ジョブズ",
+          "「一つのドアが閉まるとき、別のドアが開いている。けれども私たちは、閉まったドアばかりを見つめて、開いているドアに気づかないことが多い」――アレクサンダー・グラハム・ベル",
+          "「人間から、ほとんどすべてのものを奪うことができる。だが、どんな状況でも自分の態度を選ぶ自由だけは、決して奪えない」――ヴィクトール・フランクル",
+          "「それでも私は信じている。人間の心は、本来善いものだということを」――アンネ・フランク",
+          "「一人の子ども、一人の教師、一冊の本、一本のペンで、世界は変えられる」――マララ・ユスフザイ",
+          "「おまえが何かを望むとき、宇宙全体が、それを実現できるよう協力してくれる」――パウロ・コエーリョ（『アルケミスト』）",
+          "「いちばん大切なことは、目に見えないんだよ」――キツネ（『星の王子さま』）",
+          "「明日は、まだ何の失敗もしていない、新しい日」――アン・シャーリー（『赤毛のアン』）",
+          "「彼を知り、己を知れば、百戦して殆うからず」――孫子（『孫子』）",
+          "「人生で恐れるべきものは何もない。理解すべきものがあるだけだ」――マリー・キュリー",
+          "「道？　われわれの行く先に、道なんていらない」――ドク（『バック・トゥ・ザ・フューチャー』）",
+          "「失敗は選択肢にない」――ジーン・クランツ（『アポロ13』）",
+          "「飛ばねえ豚は、ただの豚だ」――ポルコ・ロッソ（『紅の豚』）",
+          "「国境の長いトンネルを抜けると、雪国であった」――川端康成（『雪国』）",
         ],
       ];
       var ALL_WORDS = WORD_TIERS[0].concat(WORD_TIERS[1], WORD_TIERS[2]);
@@ -645,6 +746,51 @@
         if (level >= 2) return 2;
         return 1;
       }
+
+      /* ===== 料理写真の自動推定：料理別カロリー表 ===== */
+      /* MobileNet（ImageNet）のクラス名キーワード → 料理名と一般的な1食分の目安kcal */
+      var FOOD_MAP = [
+        { keys: ["pizza"], label: "ピザ", kcal: 850 },
+        { keys: ["cheeseburger", "hamburger", "burger"], label: "ハンバーガー", kcal: 550 },
+        { keys: ["hotdog", "hot dog"], label: "ホットドッグ", kcal: 450 },
+        { keys: ["burrito"], label: "ブリトー", kcal: 650 },
+        { keys: ["taco"], label: "タコス", kcal: 520 },
+        { keys: ["carbonara", "spaghetti"], label: "パスタ", kcal: 750 },
+        { keys: ["bagel"], label: "ベーグルサンド", kcal: 450 },
+        { keys: ["pretzel"], label: "プレッツェル", kcal: 350 },
+        { keys: ["french onion soup", "soup bowl", "soup"], label: "スープ", kcal: 300 },
+        { keys: ["ice cream", "ice lolly", "ice pop"], label: "アイス・デザート", kcal: 300 },
+        { keys: ["chocolate sauce", "chocolate"], label: "チョコ系デザート", kcal: 400 },
+        { keys: ["strawberry"], label: "いちごのデザート", kcal: 300 },
+        { keys: ["orange", "lemon", "banana", "pineapple", "fig", "pomegranate", "mango"], label: "フルーツ", kcal: 150 },
+        { keys: ["broccoli", "cauliflower", "cucumber", "zucchini", "bell pepper", "mushroom", "artichoke", "head cabbage", "corn"], label: "野菜料理・サラダ", kcal: 250 },
+        { keys: ["meat loaf", "pork chop", "steak"], label: "肉料理", kcal: 800 },
+        { keys: ["fried chicken", "drumstick"], label: "フライドチキン", kcal: 700 },
+        { keys: ["cheese"], label: "チーズ料理", kcal: 500 },
+        { keys: ["egg", "omelet", "omelette"], label: "卵料理", kcal: 450 },
+        { keys: ["sushi", "nigiri"], label: "寿司", kcal: 600 },
+        { keys: ["dough", "bakery", "croissant", "baguette", "bread"], label: "パン食", kcal: 500 },
+        { keys: ["plate", "dining table"], label: "プレートごはん", kcal: 700 },
+        { keys: ["consomme", "potpie"], label: "煮込み料理", kcal: 600 },
+        { keys: ["espresso", "coffee", "cup"], label: "飲み物・軽食", kcal: 200 },
+      ];
+      /* 判定できないときに選べる料理カテゴリ（代表カロリーつき） */
+      var FOOD_CATEGORIES = [
+        { label: "和食定食", kcal: 650 },
+        { label: "丼もの", kcal: 800 },
+        { label: "ラーメン", kcal: 850 },
+        { label: "カレー", kcal: 900 },
+        { label: "パスタ", kcal: 750 },
+        { label: "寿司", kcal: 600 },
+        { label: "中華", kcal: 850 },
+        { label: "洋食プレート", kcal: 800 },
+        { label: "焼肉・肉料理", kcal: 900 },
+        { label: "揚げ物", kcal: 950 },
+        { label: "サラダ", kcal: 300 },
+        { label: "パン食", kcal: 500 },
+        { label: "そば・うどん", kcal: 550 },
+        { label: "軽食・スープ", kcal: 350 },
+      ];
 
       /* ===== 状態 ===== */
       var person = (function () {
@@ -712,6 +858,7 @@
           .replace(/"/g, "&quot;");
       }
       function $(id) { return document.getElementById(id); }
+      function round10(n) { return Math.max(0, Math.round(n / 10) * 10); }
 
       /* ===== 達成判定（運動＋食事の2つだけ） ===== */
       function achievedSetFor(p) {
@@ -809,11 +956,19 @@
       }
 
       /* ===== 描画 ===== */
+      function segmentsHtml(total, filled, cls) {
+        var html = "";
+        for (var i = 0; i < total; i++) {
+          html += "<i" + (i < filled ? ' class="' + cls + '"' : "") + "></i>";
+        }
+        return html;
+      }
       function render() {
         renderPersonTabs();
-        renderMission();
-        renderRewardArea();
+        renderHero();
+        renderToday();
         renderLists();
+        renderStock();
       }
       function renderPersonTabs() {
         var html = "";
@@ -836,63 +991,6 @@
           }
         );
       }
-      function renderMission() {
-        var s = todayStats(person);
-        var done = s.exDone && s.remaining >= 0;
-        var area = $("missing-area");
-        if (done) {
-          area.innerHTML =
-            '<div class="missing-box done"><p class="big font-display">🎉 今日クリア！レベル+1</p></div>';
-        } else {
-          var parts = "";
-          if (!s.exDone)
-            parts =
-              '<p class="big font-display">運動あと' + (s.exGoal - s.ex) + "回</p>";
-          var mealLine =
-            s.remaining >= 0
-              ? "食事はあと" + s.remaining.toLocaleString() + " kcal"
-              : "食事が" + Math.abs(s.remaining).toLocaleString() + " kcalオーバー";
-          var hint = s.exDone
-            ? "運動は達成！食事が上限以内なら今日クリアです"
-            : "あと運動" + (s.exGoal - s.ex) + "回で今日レベルアップ 🎮";
-          area.innerHTML =
-            '<div class="missing-box todo"><p class="cap font-display">今日足りないもの</p>' +
-            parts +
-            '<p class="mid font-display">' + mealLine + "</p>" +
-            '<p class="small font-display">' + hint + "</p></div>";
-        }
-        /* 運動リング */
-        var size = 88, stroke = 11, r = (size - stroke) / 2;
-        var c = 2 * Math.PI * r;
-        var frac = s.exGoal > 0 ? Math.min(1, s.ex / s.exGoal) : 1;
-        $("exercise-ring").innerHTML =
-          '<svg width="88" height="88" style="transform:rotate(-90deg)">' +
-          '<circle cx="44" cy="44" r="' + r + '" stroke="var(--surface-alt)" stroke-width="' + stroke + '" fill="none"/>' +
-          '<circle cx="44" cy="44" r="' + r + '" stroke="' + (s.exDone ? "var(--accent)" : "var(--danger)") +
-          '" stroke-width="' + stroke + '" fill="none" stroke-linecap="round" stroke-dasharray="' + c +
-          '" stroke-dashoffset="' + c * (1 - frac) + '"/></svg>' +
-          '<span class="font-display">' + (s.exDone ? "✓" : s.ex + "/" + s.exGoal) + "</span>";
-        $("exercise-ring").setAttribute("aria-label", "運動 " + s.ex + "/" + s.exGoal + "回");
-        var es = $("exercise-status");
-        es.textContent = s.exDone ? "✓ 達成" : "あと" + (s.exGoal - s.ex) + "回";
-        es.className = "status font-display " + (s.exDone ? "ok" : "ng");
-        /* 食事メーター */
-        var ms = $("meal-status");
-        ms.textContent =
-          s.remaining < 0
-            ? Math.abs(s.remaining).toLocaleString() + " kcalオーバー"
-            : "あと" + s.remaining.toLocaleString() + " kcal";
-        ms.className = "status font-display " + (s.remaining < 0 ? "ng" : "ok");
-        var pct = s.limit > 0 ? Math.min(100, Math.round((s.kcal / s.limit) * 100)) : 0;
-        var fill = $("meal-meter-fill");
-        fill.style.width = pct + "%";
-        fill.style.background = s.remaining < 0 ? "var(--danger)" : "var(--meal)";
-        $("meal-meter").setAttribute("aria-valuenow", s.kcal);
-        $("meal-meter").setAttribute("aria-valuemax", s.limit);
-        $("meal-meter-label").textContent =
-          s.kcal.toLocaleString() + " / " + s.limit.toLocaleString() + " kcal";
-      }
-      /* その人の最初の記録日（スタート日）。記録がなければ null */
       function startDateOf(p) {
         var earliest = null;
         records.forEach(function (r) {
@@ -906,7 +1004,7 @@
       function fmtDateJP(d) {
         return d.getFullYear() + "年" + (d.getMonth() + 1) + "月" + d.getDate() + "日";
       }
-      function renderRewardArea() {
+      function renderHero() {
         var set = achievedSetFor(person);
         var achievedCount = Object.keys(set).length;
         var level = achievedCount + 1;
@@ -929,47 +1027,130 @@
             if (run > best) best = run;
           }
         });
-        $("level-label").textContent = "🎮 Lv." + level;
-        $("streak-label").textContent = "🔥 " + streak + "日連続";
-        /* 達成の分数：達成した日数 / スタートからの日数 */
-        var start = startDateOf(person);
-        var today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        var elapsed = start
-          ? Math.round((today0 - start) / 86400000) + 1
-          : 1;
-        if (elapsed < achievedCount) elapsed = achievedCount;
-        if (elapsed < 1) elapsed = 1;
-        $("frac-label").textContent =
-          "📅 " + achievedCount + "/" + elapsed + "日達成";
+        $("level-num").textContent = achievedCount;
+        $("streak-num").textContent = streak;
         $("reward-msg").textContent = done
           ? "今日クリア！この調子なら、気づいたら痩せてます"
-          : "今日クリアで " + (streak + 1) + "日連続＆レベルアップ！";
-        $("reward-sub").textContent = "ベスト " + best + "日連続";
+          : "今日クリアで " + (streak + 1) + "日連続になります";
+        var start = startDateOf(person);
+        var today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        var elapsed = start ? Math.round((today0 - start) / 86400000) + 1 : 1;
+        if (elapsed < achievedCount) elapsed = achievedCount;
+        if (elapsed < 1) elapsed = 1;
+        $("reward-sub").textContent =
+          "達成 " + achievedCount + " / " + elapsed + "日 ・ ベスト " + best + "日連続";
         $("start-label").textContent = start
           ? "スタート：" + fmtDateJP(start) + " ・ 今日で" + elapsed + "日目"
           : "スタート：最初の記録を付けた日がスタート日になります";
-        /* 通算100日達成のご褒美メモ */
+        /* 通算100日 */
         var GOAL100 = 100;
-        var mFill = $("milestone-fill");
-        mFill.style.width = Math.min(100, (achievedCount / GOAL100) * 100) + "%";
-        mFill.style.background = "var(--gold)";
-        $("milestone-meter").setAttribute("aria-valuenow", achievedCount);
-        $("milestone-meter").setAttribute("aria-valuemax", GOAL100);
+        $("milestone-frac").textContent = achievedCount + " / " + GOAL100 + " 日";
+        $("milestone-segments").innerHTML = segmentsHtml(20, Math.round(Math.min(1, achievedCount / GOAL100) * 20), "on");
+        $("milestone-segments").setAttribute("aria-label", "通算100日達成まで " + achievedCount + "/100日");
         if (achievedCount >= GOAL100) {
-          $("milestone-label").textContent = "🎉 通算100日達成！";
           $("milestone-note").textContent =
             person === "kana"
-              ? "約束のご褒美タイム！健吾さんからご褒美をもらおう"
-              : "約束どおり、佳奈さんにご褒美をあげよう！";
+              ? "通算100日達成！約束のご褒美タイム。健吾さんからご褒美をもらおう"
+              : "通算100日達成！約束どおり、佳奈さんにご褒美をあげよう";
         } else {
-          $("milestone-label").textContent =
-            "🎁 通算100日まで あと" + (GOAL100 - achievedCount) + "日（" +
-            achievedCount + "/" + GOAL100 + "日）";
           $("milestone-note").textContent =
-            person === "kana"
-              ? "通算100日達成したら、健吾さんからご褒美の約束です"
-              : "通算100日達成したら、佳奈さんにご褒美をあげる約束です";
+            "あと" + (GOAL100 - achievedCount) + "日。" +
+            (person === "kana"
+              ? "達成したら健吾さんからご褒美の約束です"
+              : "達成したら佳奈さんにご褒美をあげる約束です");
         }
+      }
+      /* 直近7日（6日前〜今日）の運動回数とカロリー */
+      function weekData(p) {
+        var out = [];
+        var now = new Date();
+        for (var i = 6; i >= 0; i--) {
+          var d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+          var key = dayKey(d);
+          var ex = 0;
+          var kcal = 0;
+          records.forEach(function (r) {
+            if (r.person !== p) return;
+            if (dayKey(new Date(r.created_at)) !== key) return;
+            if (EXERCISE_TYPES.indexOf(r.type) >= 0) ex += 1;
+            if (r.type === "meal") kcal += r.calories || 0;
+          });
+          out.push({
+            wd: "日月火水木金土"[d.getDay()],
+            ex: ex,
+            kcal: kcal,
+            today: i === 0,
+          });
+        }
+        return out;
+      }
+      function weekChartHtml(data, kind, max) {
+        var html = "";
+        data.forEach(function (d) {
+          var v = kind === "ex" ? d.ex : d.kcal;
+          var pct = max > 0 ? Math.min(1, v / max) : 0;
+          var h = v > 0 ? Math.max(12, Math.round(pct * 100)) : 4;
+          html +=
+            '<div class="wc-col' + (d.today ? " today" : "") + '">' +
+            '<div class="wc-bar-wrap"><div class="wc-bar' + (d.today ? "" : " past") +
+            '" style="height:' + h + '%"></div></div>' +
+            '<span class="wc-day">' + d.wd + "</span></div>";
+        });
+        return html;
+      }
+      function renderToday() {
+        var s = todayStats(person);
+        var done = s.exDone && s.remaining >= 0;
+        var area = $("clear-area");
+        if (done) {
+          area.innerHTML =
+            '<div class="clear-banner"><p>今日クリア！</p><p class="sub">今日の目標を達成しました</p></div>';
+        } else {
+          area.innerHTML = "";
+        }
+        /* 運動：目標回数ぶんのセグメント */
+        $("exercise-frac").innerHTML =
+          s.ex + '<small> / ' + s.exGoal + '</small> <span class="unit">回</span>';
+        $("exercise-segments").innerHTML = segmentsHtml(
+          Math.max(1, s.exGoal), Math.min(s.ex, s.exGoal), s.exDone ? "done" : "on"
+        );
+        $("exercise-segments").setAttribute("aria-label", "運動 " + s.ex + "/" + s.exGoal + "回");
+        var en = $("exercise-note");
+        if (s.exDone) {
+          en.textContent = "達成しました";
+          en.className = "stat-note ok";
+        } else {
+          en.textContent = "あと" + (s.exGoal - s.ex) + "回で達成";
+          en.className = "stat-note plain";
+        }
+        /* 食事：10セグメントで上限に対する割合 */
+        $("meal-frac").innerHTML =
+          s.kcal.toLocaleString() + '<small> / ' + s.limit.toLocaleString() + '</small> <span class="unit">kcal</span>';
+        var filledSeg = Math.round(Math.min(1, s.limit > 0 ? s.kcal / s.limit : 0) * 10);
+        $("meal-segments").innerHTML = segmentsHtml(10, filledSeg, s.remaining < 0 ? "over" : "on");
+        $("meal-segments").setAttribute("aria-label", "食事 " + s.kcal + "/" + s.limit + " kcal");
+        var mn = $("meal-note");
+        if (s.remaining < 0) {
+          mn.textContent = Math.abs(s.remaining).toLocaleString() + " kcal オーバー";
+          mn.className = "stat-note ng";
+        } else {
+          mn.textContent = "あと " + s.remaining.toLocaleString() + " kcal までOK";
+          mn.className = "stat-note ok";
+        }
+        /* 直近7日のミニ棒グラフ */
+        var wk = weekData(person);
+        var exMax = s.exGoal;
+        wk.forEach(function (d) { if (d.ex > exMax) exMax = d.ex; });
+        $("exercise-week").innerHTML = weekChartHtml(wk, "ex", exMax);
+        $("exercise-week").setAttribute(
+          "aria-label",
+          "直近7日の運動回数：" + wk.map(function (d) { return d.wd + d.ex + "回"; }).join("、")
+        );
+        $("meal-week").innerHTML = weekChartHtml(wk, "kcal", s.limit);
+        $("meal-week").setAttribute(
+          "aria-label",
+          "直近7日の食事カロリー：" + wk.map(function (d) { return d.wd + d.kcal + "kcal"; }).join("、")
+        );
       }
       function recItemHtml(r, showBadge) {
         var meta = TYPE_META[r.type] || TYPE_META.poop;
@@ -978,7 +1159,7 @@
         if (EXERCISE_TYPES.indexOf(r.type) >= 0)
           chip = '<span class="kind-chip">運動</span>';
         var badge = showBadge
-          ? '<span class="person-badge ' + r.person + '">' + esc(owner) + "</span>"
+          ? '<span class="person-badge">' + esc(owner) + "</span>"
           : "";
         var kcal =
           r.type === "meal" && r.calories
@@ -1027,7 +1208,7 @@
           groups.forEach(function (g) {
             html +=
               '<div class="day-group"><h3>' + esc(g.label) +
-              (achievedAny[g.key] ? '<span class="clear-badge">🎉 クリア！</span>' : "") +
+              (achievedAny[g.key] ? '<span class="clear-badge">クリア！</span>' : "") +
               '</h3><ul class="rec-list">';
             g.items.forEach(function (r) {
               html += recItemHtml(r, view === "history");
@@ -1043,26 +1224,33 @@
             if (rec) openEdit(rec);
           });
         });
-        /* コレクションは履歴タブの下 */
-        var col = $("collection");
-        if (view === "history") {
-          col.style.display = "block";
-          var mine = collected[person] || [];
-          var html2 =
-            '<h3 class="font-display">🎁 あつめた言葉 <span class="count">' +
-            mine.length + " / " + ALL_WORDS.length + "</span></h3>";
-          if (mine.length === 0) {
-            html2 += '<p class="none">記録すると、ご褒美の言葉がここに溜まっていきます。</p>';
-          } else {
-            html2 += "<ul>";
-            mine.forEach(function (w) {
-              html2 += "<li>" + esc(w) + "</li>";
-            });
-            html2 += "</ul>";
-          }
-          col.innerHTML = html2;
+      }
+      /* 言葉のストック（履歴タブとは別に、常に表示する） */
+      function renderStock() {
+        var mine = collected[person] || [];
+        $("stock-count").innerHTML =
+          mine.length + ' <span class="of">/ ' + ALL_WORDS.length + " 件</span>";
+        var filled = Math.round(
+          Math.min(1, ALL_WORDS.length ? mine.length / ALL_WORDS.length : 0) * 10
+        );
+        $("stock-segments").innerHTML = segmentsHtml(10, filled, "on");
+        $("stock-segments").setAttribute(
+          "aria-label",
+          "言葉のストック " + mine.length + "/" + ALL_WORDS.length + "件"
+        );
+        var body = $("stock-body");
+        if (!loaded) {
+          body.innerHTML = '<p class="none">読み込んでいます…</p>';
+        } else if (mine.length === 0) {
+          body.innerHTML =
+            '<p class="none">まだ言葉がありません。記録すると、ご褒美の言葉がここに溜まっていきます。</p>';
         } else {
-          col.style.display = "none";
+          var html = "<ul>";
+          mine.forEach(function (w) {
+            html += "<li>" + esc(w) + "</li>";
+          });
+          html += "</ul>";
+          body.innerHTML = html;
         }
       }
 
@@ -1121,7 +1309,7 @@
           $("reward-word").textContent = word;
           $("levelup-slot").innerHTML =
             leveledTo !== null
-              ? '<span class="levelup-chip font-display anim-pop">🎉 レベルアップ！ Lv.' + leveledTo + "</span>"
+              ? '<span class="levelup-chip anim-pop">目標達成！ ' + (leveledTo - 1) + "日クリア</span>"
               : "";
           card.classList.add("word-phase");
           $("reward-phase-word").style.display = "block";
@@ -1161,6 +1349,7 @@
         recentWords = recentWords.concat([word]).slice(-8);
         try { localStorage.setItem("mg-recent-words", JSON.stringify(recentWords)); } catch (e) {}
         renderLists();
+        renderStock();
         busy = false;
         showReward(word, levelAfter > levelBefore ? levelAfter : null);
         return true;
@@ -1179,11 +1368,52 @@
         });
       });
 
-      /* ===== 食事シート ===== */
-      var mealKcal = 650;
+      /* ===== 食事シート＋写真からのカロリー自動推定 ===== */
+      var mealTotal = 650;      /* 写真全体（合計）の推定kcal */
+      var mealPer = 650;        /* 1人あたりkcal（保存される値） */
       var mealPreset = "ふつう";
       var mealSnack = 0;
+      var mealServings = 1;
       var mealPhotoUrl = null;
+      var mealCatLabel = null;  /* カテゴリ選択で入れた場合の名前 */
+
+      var netModel = null;
+      var netModelPromise = null;
+      function loadFoodModel() {
+        if (netModel) return Promise.resolve(netModel);
+        if (netModelPromise) return netModelPromise;
+        netModelPromise = (async function () {
+          if (typeof mobilenet === "undefined") throw new Error("no-lib");
+          netModel = await mobilenet.load({ version: 2, alpha: 1.0 });
+          return netModel;
+        })();
+        netModelPromise.catch(function () { netModelPromise = null; });
+        return netModelPromise;
+      }
+      function matchFood(className) {
+        var name = String(className || "").toLowerCase();
+        var parts = name.split(",").map(function (s) { return s.trim(); });
+        for (var i = 0; i < parts.length; i++) {
+          for (var j = 0; j < FOOD_MAP.length; j++) {
+            for (var k = 0; k < FOOD_MAP[j].keys.length; k++) {
+              if (parts[i].indexOf(FOOD_MAP[j].keys[k]) >= 0) return FOOD_MAP[j];
+            }
+          }
+        }
+        return null;
+      }
+      function setMealTotal(total, sourceLabel) {
+        mealTotal = Math.max(0, Math.round(total));
+        mealPer = round10(mealTotal / mealServings);
+        mealPreset = "";
+        mealCatLabel = sourceLabel || null;
+        renderMealSheet();
+      }
+      function setMealPer(per) {
+        mealPer = Math.max(0, Math.round(per));
+        mealTotal = mealPer * mealServings;
+        renderMealSheet();
+      }
       function mealPresetsHtml(activeKcal) {
         var html = "";
         MEAL_PRESETS.forEach(function (p) {
@@ -1194,34 +1424,83 @@
         });
         return html;
       }
+      function renderMealCats() {
+        var html = "";
+        FOOD_CATEGORIES.forEach(function (c) {
+          html +=
+            '<button type="button" data-cat="' + esc(c.label) + '" data-kcal="' + c.kcal +
+            '" aria-pressed="' + (mealCatLabel === c.label) + '">' +
+            esc(c.label) + " <small>約" + c.kcal + "kcal</small></button>";
+        });
+        $("meal-cats").innerHTML = html;
+        Array.prototype.forEach.call($("meal-cats").querySelectorAll("button"), function (b) {
+          b.addEventListener("click", function () {
+            var kcal = Number(b.getAttribute("data-kcal"));
+            var label = b.getAttribute("data-cat");
+            setMealTotal(kcal * mealServings, label);
+            var box = $("meal-estimate");
+            box.style.display = "block";
+            $("meal-estimate-main").textContent =
+              "「" + label + "」として 約" + mealPer.toLocaleString() + " kcal（1人あたり）";
+            $("meal-estimate-sub").textContent =
+              "カテゴリの代表値です。量に合わせて下のボタンで調整できます。";
+          });
+        });
+      }
       function renderMealSheet() {
-        $("meal-kcal-val").textContent = mealKcal.toLocaleString();
-        $("meal-presets").innerHTML = mealPresetsHtml(
-          mealPreset ? MEAL_PRESETS.find(function (p) { return p.label === mealPreset; }).kcal : -1
-        );
+        $("meal-kcal-val").textContent = mealPer.toLocaleString();
+        var presetKcal = -1;
+        if (mealPreset) {
+          var found = MEAL_PRESETS.find(function (p) { return p.label === mealPreset; });
+          if (found) presetKcal = found.kcal;
+        }
+        $("meal-presets").innerHTML = mealPresetsHtml(presetKcal);
         Array.prototype.forEach.call($("meal-presets").querySelectorAll("button"), function (b) {
           b.addEventListener("click", function () {
             mealPreset = b.getAttribute("data-label");
-            mealKcal = Number(b.getAttribute("data-kcal"));
+            mealCatLabel = null;
+            setMealPer(Number(b.getAttribute("data-kcal")));
+            mealPreset = b.getAttribute("data-label");
             renderMealSheet();
           });
+        });
+        Array.prototype.forEach.call($("meal-servings").querySelectorAll("button"), function (b) {
+          b.setAttribute("aria-pressed", Number(b.getAttribute("data-serv")) === mealServings ? "true" : "false");
         });
         Array.prototype.forEach.call($("snack-row").querySelectorAll("[data-snack]"), function (b) {
           var v = Number(b.getAttribute("data-snack"));
           b.setAttribute("aria-pressed", mealSnack === v && !$("snack-input").value ? "true" : "false");
         });
+        $("meal-total-note").textContent =
+          mealServings > 1
+            ? "合計 約" + mealTotal.toLocaleString() + " kcal ÷ " + mealServings + "人分 ＝ 1人あたり " + mealPer.toLocaleString() + " kcal"
+            : "合計 約" + mealTotal.toLocaleString() + " kcal（1人分）";
         $("meal-save").textContent =
-          "保存する（合計 " + (mealKcal + mealSnack).toLocaleString() + " kcal）";
+          "保存する（1人あたり 合計 " + (mealPer + mealSnack).toLocaleString() + " kcal）";
+        renderMealCats();
       }
+      Array.prototype.forEach.call($("meal-servings").querySelectorAll("button"), function (b) {
+        b.addEventListener("click", function () {
+          mealServings = Number(b.getAttribute("data-serv"));
+          mealPer = round10(mealTotal / mealServings);
+          renderMealSheet();
+        });
+      });
       function openMeal() {
-        mealKcal = 650;
+        mealTotal = 650;
+        mealPer = 650;
         mealPreset = "ふつう";
         mealSnack = 0;
+        mealServings = 1;
+        mealCatLabel = null;
         $("snack-input").value = "";
         if (mealPhotoUrl) URL.revokeObjectURL(mealPhotoUrl);
         mealPhotoUrl = null;
         $("meal-photo-empty").style.display = "block";
         $("meal-photo-preview").style.display = "none";
+        $("meal-est-status").style.display = "none";
+        $("meal-estimate").style.display = "none";
+        $("meal-cat-wrap").style.display = "none";
         $("meal-error").style.display = "none";
         $("meal-title").textContent = nameOf(person) + "さんの食事";
         renderMealSheet();
@@ -1230,19 +1509,16 @@
       $("open-meal").addEventListener("click", openMeal);
       $("meal-minus").addEventListener("click", function () {
         mealPreset = "";
-        mealKcal = Math.max(0, mealKcal - 50);
-        renderMealSheet();
+        setMealPer(mealPer - 50);
       });
       $("meal-plus").addEventListener("click", function () {
         mealPreset = "";
-        mealKcal = mealKcal + 50;
-        renderMealSheet();
+        setMealPer(mealPer + 50);
       });
       Array.prototype.forEach.call($("snack-row").querySelectorAll("[data-snack]"), function (b) {
         b.addEventListener("click", function () {
           mealSnack = Number(b.getAttribute("data-snack"));
-          $("snack-input").value = mealSnack === 0 ? "" : "";
-          if (mealSnack !== 0) $("snack-input").value = "";
+          $("snack-input").value = "";
           renderMealSheet();
         });
       });
@@ -1252,16 +1528,62 @@
           b.setAttribute("aria-pressed", "false");
         });
         $("meal-save").textContent =
-          "保存する（合計 " + (mealKcal + mealSnack).toLocaleString() + " kcal）";
+          "保存する（1人あたり 合計 " + (mealPer + mealSnack).toLocaleString() + " kcal）";
       });
       $("meal-photo-btn").addEventListener("click", function () { $("meal-file").click(); });
       $("meal-retake").addEventListener("click", function () { $("meal-file").click(); });
+
+      /* 写真を端末内で分類してカロリーを推定する */
+      async function estimateFromPhoto() {
+        var status = $("meal-est-status");
+        var box = $("meal-estimate");
+        box.style.display = "none";
+        $("meal-cat-wrap").style.display = "none";
+        status.style.display = "block";
+        status.textContent = "写真を解析中…（端末の中で判定しています）";
+        var img = $("meal-photo-img");
+        try {
+          var model = await loadFoodModel();
+          var preds = await model.classify(img, 5);
+          var hit = null;
+          var hitProb = 0;
+          (preds || []).forEach(function (p) {
+            var f = matchFood(p.className);
+            if (f && p.probability > hitProb) { hit = f; hitProb = p.probability; }
+          });
+          status.style.display = "none";
+          if (hit && hitProb >= 0.12) {
+            setMealTotal(hit.kcal * mealServings, null);
+            box.style.display = "block";
+            $("meal-estimate-main").textContent =
+              "写真からの推定：" + hit.label + " 約" + mealPer.toLocaleString() + " kcal（1人あたり）";
+            $("meal-estimate-sub").textContent =
+              "写真の判定をもとにした目安です（確からしさ 約" + Math.round(hitProb * 100) + "%）。" +
+              "大皿のときは「何人分？」を変えると1人あたりを自動で割り直します。量が違うと感じたら下のボタンで調整してください。";
+          } else {
+            $("meal-cat-wrap").style.display = "block";
+            box.style.display = "block";
+            $("meal-estimate-main").textContent = "写真だけでは料理を特定できませんでした";
+            $("meal-estimate-sub").textContent =
+              "下の種類から近いものを選ぶとカロリーが入ります。そのまま目安ボタンや ± でも調整できます。";
+          }
+        } catch (e) {
+          status.style.display = "none";
+          $("meal-cat-wrap").style.display = "block";
+          box.style.display = "block";
+          $("meal-estimate-main").textContent = "自動推定を読み込めませんでした";
+          $("meal-estimate-sub").textContent =
+            "通信環境によっては推定モデルが使えないことがあります。下の種類から選ぶか、目安ボタンでそのまま記録できます。";
+        }
+      }
       $("meal-file").addEventListener("change", function () {
         var f = $("meal-file").files && $("meal-file").files[0];
         if (!f) return;
         if (mealPhotoUrl) URL.revokeObjectURL(mealPhotoUrl);
         mealPhotoUrl = URL.createObjectURL(f);
-        $("meal-photo-img").src = mealPhotoUrl;
+        var img = $("meal-photo-img");
+        img.onload = function () { estimateFromPhoto(); };
+        img.src = mealPhotoUrl;
         $("meal-photo-empty").style.display = "none";
         $("meal-photo-preview").style.display = "block";
       });
@@ -1272,7 +1594,7 @@
           id: newId(),
           person: person,
           type: "meal",
-          calories: mealKcal + mealSnack,
+          calories: mealPer + mealSnack,
           created_at: new Date().toISOString(),
         });
         btn.disabled = false;
@@ -1475,7 +1797,7 @@
       });
 
       /* ===== 目標フォーム（設定・初期設定で共用） ===== */
-      function goalPickerHtml(prefix, state) {
+      function goalPickerHtml(state) {
         var exHtml = "";
         [2, 3, 4, 5].forEach(function (n) {
           exHtml +=
@@ -1489,18 +1811,18 @@
             n.toLocaleString() + "kcal</button>";
         });
         return (
-          '<div class="goal-picker"><p class="gp-label font-display">🏃 運動（1日）</p><div class="gp-row">' +
+          '<div class="goal-picker"><p class="gp-label">運動（1日）</p><div class="gp-row">' +
           exHtml +
           '<label><input type="number" inputmode="numeric" class="num-input w20" data-gp-input="ex" value="' + state.ex + '" aria-label="運動の目標回数を直接入力">回</label>' +
           "</div></div>" +
-          '<div class="goal-picker"><p class="gp-label font-display">🍚 食事の上限（1日）</p><div class="gp-row">' +
+          '<div class="goal-picker"><p class="gp-label">食事の上限（1日）</p><div class="gp-row">' +
           kcalHtml +
           '<label><input type="number" inputmode="numeric" class="num-input w24" data-gp-input="kcal" value="' + state.kcal + '" aria-label="食事の上限カロリーを直接入力">kcal</label>' +
           "</div></div>"
         );
       }
       function bindGoalPicker(container, state, rerender) {
-        container.innerHTML = goalPickerHtml("", state);
+        container.innerHTML = goalPickerHtml(state);
         Array.prototype.forEach.call(container.querySelectorAll("[data-gp]"), function (b) {
           b.addEventListener("click", function () {
             state[b.getAttribute("data-gp")] = Number(b.getAttribute("data-v"));
